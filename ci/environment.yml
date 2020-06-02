@@ -10,3 +10,4 @@ dependencies:
   - xarray
   - numpydoc
   - nbsphinx
+  - dask
