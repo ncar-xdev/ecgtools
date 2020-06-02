@@ -152,10 +152,9 @@ def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable =
     results = {'path': filepath}
     if parser is not None:
         x = parser(filepath, global_attrs)
+        # Merge x and results dictionaries
         results = {**x, **results}
-        return results
-    else:
-        return results
+    return results
 
 
 _parse_file_attributes_delayed = dask.delayed(_parse_file_attributes)

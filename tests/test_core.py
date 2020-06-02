@@ -39,6 +39,11 @@ cmip6_parser = functools.partial(
 )
 
 
+def test_builder_invalid_root_path():
+    with pytest.raises(FileNotFoundError):
+        _ = Builder(root_path='DOES_NOT_EXIST')
+
+
 @pytest.mark.parametrize('root_path, depth, num_dirs', [(cmip6_root_path, 3, 18)])
 def test_builder(root_path, depth, num_dirs):
     b = Builder(root_path, depth=depth)
