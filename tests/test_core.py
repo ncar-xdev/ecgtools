@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from ecg import Builder, parse_attributes_from_dataset
+from ecg import Builder, parse_files_attributes
 from ecg.parsers import default_cmip6_ds_parser
 
 here = Path(os.path.dirname(__file__))
@@ -29,7 +29,10 @@ global_attrs = [
 ]
 variable_attrs = ['standard_name']
 
-attrs_mapping = {'variant_label': 'member_id', 'parent_variant_label': 'parent_member_id'}
+attrs_mapping = {
+    'variant_label': 'member_id',
+    'parent_variant_label': 'parent_member_id',
+}
 
 cmip6_parser = functools.partial(
     default_cmip6_ds_parser, variable_attrs=variable_attrs, attrs_mapping=attrs_mapping
@@ -52,14 +55,12 @@ def test_builder(root_path, depth, num_dirs):
 @pytest.mark.parametrize('lazy', [False])
 def test_cmip6_parser(root_path, depth, lazy):
     b = Builder(
-        root_path, depth=depth, extension='*.nc', exclude_patterns=['*/files/*', '*/latest/*']
+        root_path, depth=depth, extension='*.nc', exclude_patterns=['*/files/*', '*/latest/*'],
     )
     filelist = b.get_filelist_from_dirs(lazy=lazy)
     filelist = sorted(list(itertools.chain(*filelist)))
 
-    entries_x = parse_attributes_from_dataset(
-        filelist, global_attrs, lazy=lazy, parser=cmip6_parser
-    )
+    entries_x = parse_files_attributes(filelist, global_attrs, lazy=lazy, parser=cmip6_parser)
     expected = {
         'path': f'{cmip6_root_path}/CMIP/BCC/BCC-CSM2-MR/abrupt-4xCO2/r1i1p1f1/Amon/tasmax/gn/v20181016/tasmax/tasmax_Amon_BCC-CSM2-MR_abrupt-4xCO2_r1i1p1f1_gn_185001-200012.nc',
         'activity_id': 'CMIP',
@@ -83,5 +84,5 @@ def test_cmip6_parser(root_path, depth, lazy):
     }
     assert entries_x[0] == expected
 
-    entries_y = b.parse_attributes_from_dataset(global_attrs, cmip6_parser)
+    entries_y = b.parse_files_attributes(global_attrs, cmip6_parser, nbatches=1)
     assert len(entries_x) == len(entries_y)

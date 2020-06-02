@@ -3,7 +3,7 @@
 """Top-level module for ecg ."""
 from pkg_resources import DistributionNotFound, get_distribution
 
-from .core import Builder, parse_attributes_from_dataset
+from .core import Builder, parse_files_attributes
 
 try:
     __version__ = get_distribution(__name__).version

@@ -105,8 +105,8 @@ class Builder:
         self.filelist = filelist
         return filelist
 
-    def parse_attributes_from_dataset(
-        self, global_attrs: list, parser: callable = None, lazy: bool = True
+    def parse_files_attributes(
+        self, global_attrs: list, parser: callable = None, lazy: bool = True, nbatches: int = 25
     ):
         if self.filelist:
             if dask.is_dask_collection(self.filelist[0]):
@@ -116,26 +116,38 @@ class Builder:
         else:
             filelist = self.get_filelist_from_dirs(lazy=False)
         filepaths = list(itertools.chain(*filelist))
-        entries = parse_attributes_from_dataset(filepaths, global_attrs, parser, lazy)
+        entries = parse_files_attributes(filepaths, global_attrs, parser, lazy, nbatches)
         return entries
 
 
-def parse_attributes_from_dataset(
-    filepaths: list, global_attrs: list, parser: callable = None, lazy: bool = True,
+def parse_files_attributes(
+    filepaths: list,
+    global_attrs: list,
+    parser: callable = None,
+    lazy: bool = True,
+    nbatches: int = 25,
 ):
+    def batch(seq):
+        sub_results = []
+        for x in seq:
+            sub_results.append(_parse_file_attributes(x, global_attrs, parser))
+        return sub_results
+
     if lazy:
-        results = [
-            _parse_attributes_from_ds_delayed(filepath, global_attrs, parser)
-            for filepath in filepaths
-        ]
+        # Don't Do this: [_parse_file_attributes_delayed(filepath, global_attrs, parser) for filepath in filepaths]
+        # It will produce a very large task graph for large collections. For example, CMIP6 archive would results
+        # in a task graph with ~1.5 million tasks. To reduce the number of tasks,
+        # we will batch multiple tasks into a single task by creating batches of delayed calls.
+        results = []
+        for i in range(0, len(filepaths), nbatches):
+            result_batch = dask.delayed(batch)(filepaths[i : i + nbatches])
+            results.append(result_batch)
     else:
-        results = [
-            _parse_attributes_from_ds(filepath, global_attrs, parser) for filepath in filepaths
-        ]
+        results = [_parse_file_attributes(filepath, global_attrs, parser) for filepath in filepaths]
     return results
 
 
-def _parse_attributes_from_ds(filepath: str, global_attrs: list, parser: callable = None):
+def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable = None):
 
     results = {'path': filepath}
     if parser is not None:
@@ -146,19 +158,4 @@ def _parse_attributes_from_ds(filepath: str, global_attrs: list, parser: callabl
         return results
 
 
-_parse_attributes_from_ds_delayed = dask.delayed(_parse_attributes_from_ds)
-
-
-def parse_attributes_from_filepath(filepaths: list, lazy: bool = True):
-    # TODO: We should migrate Sheri'PR here
-    # Ref: https://github.com/NCAR/intake-esm-datastore/pull/70
-    ...
-
-
-def _parse_attributes_from_filepath(filepath):
-    # TODO: We should migrate Sheri'PR here
-    # Ref: https://github.com/NCAR/intake-esm-datastore/pull/70
-    ...
-
-
-_parse_attributes_from_filepath_delayed = dask.delayed(_parse_attributes_from_filepath)
+_parse_file_attributes_delayed = dask.delayed(_parse_file_attributes)
