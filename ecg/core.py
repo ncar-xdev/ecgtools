@@ -2,6 +2,7 @@ import itertools
 from pathlib import Path
 
 import dask
+import xarray as xr
 
 
 class Builder:
@@ -154,7 +155,18 @@ def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable =
         x = parser(filepath, global_attrs)
         # Merge x and results dictionaries
         results = {**x, **results}
-    return results
+        return results
+
+    else:
+        try:
+            ds = xr.open_dataset(filepath, decode_times=False, chunks={})
+            for attr in global_attrs:
+                results[attr] = ds.attrs.get(attr, None)
+
+            return results
+        except Exception as e:
+            print(e)
+            return {}
 
 
 _parse_file_attributes_delayed = dask.delayed(_parse_file_attributes)

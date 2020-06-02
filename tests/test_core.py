@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 
 from ecg import Builder, parse_files_attributes
+from ecg.core import _parse_file_attributes
 from ecg.parsers import default_cmip6_ds_parser
 
 here = Path(os.path.dirname(__file__))
@@ -91,3 +92,38 @@ def test_cmip6_parser(root_path, depth, lazy):
 
     entries_y = b.parse_files_attributes(global_attrs, cmip6_parser, nbatches=1)
     assert len(entries_x) == len(entries_y)
+
+
+def myparser(filepath, global_attrs):
+    return {'path': filepath, 'foo': 'bar'}
+
+
+@pytest.mark.parametrize(
+    'filepath, global_attrs, parser, expected',
+    [
+        (
+            f'{cmip6_root_path}/CMIP/BCC/BCC-CSM2-MR/abrupt-4xCO2/r1i1p1f1/Amon/tasmax/gn/v20181016/tasmax/tasmax_Amon_BCC-CSM2-MR_abrupt-4xCO2_r1i1p1f1_gn_185001-200012.nc',
+            ['source_id', 'experiment_id', 'table_id', 'grid_label'],
+            None,
+            {
+                'experiment_id': 'abrupt-4xCO2',
+                'table_id': 'Amon',
+                'source_id': 'BCC-CSM2-MR',
+                'grid_label': 'gn',
+            },
+        ),
+        (
+            f'{cmip6_root_path}/CMIP/BCC/BCC-CSM2-MR/abrupt-4xCO2/r1i1p1f1/Amon/tasmax/gn/v20181016/tasmax/tasmax_Amon_BCC-CSM2-MR_abrupt-4xCO2_r1i1p1f1_gn_185001-200012.nc',
+            ['path', 'foo'],
+            myparser,
+            {
+                'path': f'{cmip6_root_path}/CMIP/BCC/BCC-CSM2-MR/abrupt-4xCO2/r1i1p1f1/Amon/tasmax/gn/v20181016/tasmax/tasmax_Amon_BCC-CSM2-MR_abrupt-4xCO2_r1i1p1f1_gn_185001-200012.nc',
+                'foo': 'bar',
+            },
+        ),
+    ],
+)
+def test_parse_file_attributes(filepath, global_attrs, parser, expected):
+    attrs = _parse_file_attributes(filepath, global_attrs, parser)
+    for key in global_attrs:
+        assert attrs[key] == expected[key]
