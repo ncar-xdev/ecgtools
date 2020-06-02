@@ -1,3 +1,4 @@
+import itertools
 from pathlib import Path
 
 import dask
@@ -12,6 +13,8 @@ class Builder:
         exclude_patterns: list = None,
     ):
         self.root_path = Path(root_path)
+        if not self.root_path.is_dir():
+            raise FileNotFoundError(f'{root_path} directory does not exist')
         self.dirs = []
         self.filelist = []
         if extension is None:
@@ -101,6 +104,20 @@ class Builder:
             ]
         self.filelist = filelist
         return filelist
+
+    def parse_attributes_from_dataset(
+        self, global_attrs: list, parser: callable = None, lazy: bool = True
+    ):
+        if self.filelist:
+            if dask.is_dask_collection(self.filelist[0]):
+                filelist = self.filelist.compute()
+            else:
+                filelist = self.filelist
+        else:
+            filelist = self.get_filelist_from_dirs(lazy=False)
+        filepaths = list(itertools.chain(*filelist))
+        entries = parse_attributes_from_dataset(filepaths, global_attrs, parser, lazy)
+        return entries
 
 
 def parse_attributes_from_dataset(
