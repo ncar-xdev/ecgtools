@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from ecg import Builder, parse_files_attributes
-from ecg.core import _parse_file_attributes
-from ecg.parsers import default_cmip6_ds_parser
+from ecgtools import Builder, parse_files_attributes
+from ecgtools.core import _parse_file_attributes
+from ecgtools.parsers import default_cmip6_ds_parser
 
 here = Path(os.path.dirname(__file__))
 cmip6_root_path = here.parent / 'sample_data' / 'cmip' / 'CMIP6'
@@ -47,12 +47,11 @@ def test_builder_invalid_root_path():
 
 @pytest.mark.parametrize('root_path, depth, num_dirs', [(cmip6_root_path, 3, 18)])
 def test_builder(root_path, depth, num_dirs):
-    b = Builder(root_path, depth=depth)
-    directories = b.get_directories()
+    b = Builder(root_path, depth=depth).get_directories().get_filelist_from_dirs()
+    directories = b.dirs
+    filelist = b.filelist
     assert isinstance(directories[0], Path)
     assert len(directories) == num_dirs
-
-    filelist = b.get_filelist_from_dirs()
     assert len(filelist) == num_dirs
 
 
@@ -62,8 +61,8 @@ def test_builder(root_path, depth, num_dirs):
 def test_cmip6_parser(root_path, depth, lazy):
     b = Builder(
         root_path, depth=depth, extension='*.nc', exclude_patterns=['*/files/*', '*/latest/*'],
-    )
-    filelist = b.get_filelist_from_dirs(lazy=lazy)
+    ).get_filelist_from_dirs(lazy=lazy)
+    filelist = b.filelist
     filelist = sorted(list(itertools.chain(*filelist)))
 
     entries_x = parse_files_attributes(filelist, global_attrs, lazy=lazy, parser=cmip6_parser)
@@ -90,7 +89,7 @@ def test_cmip6_parser(root_path, depth, lazy):
     }
     assert entries_x[0] == expected
 
-    entries_y = b.parse_files_attributes(global_attrs, cmip6_parser, nbatches=1)
+    entries_y = b.parse_files_attributes(global_attrs, cmip6_parser, nbatches=1).entries
     assert len(entries_x) == len(entries_y)
 
 

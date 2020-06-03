@@ -2,6 +2,6 @@
 Usage
 ========
 
-To use ecg in a project::
+To use ecgtools in a project::
 
-	import ecg
+	import ecgtools

@@ -2,6 +2,7 @@ import itertools
 from pathlib import Path
 
 import dask
+import pandas as pd
 import xarray as xr
 
 
@@ -42,6 +43,8 @@ class Builder:
             raise FileNotFoundError(f'{root_path} directory does not exist')
         self.dirs = []
         self.filelist = []
+        self.entries = []
+        self.df = None
         if extension is None:
             self.extension = '*.nc'
         else:
@@ -86,7 +89,7 @@ class Builder:
         pattern = '*/' * (depth + 1)
         dirs = [x for x in root_path.glob(pattern) if x.is_dir()]
         self.dirs = dirs
-        return dirs
+        return self
 
     def get_filelist(self, directory: str, extension: str = None, exclude_patterns: list = None):
         """
@@ -182,7 +185,7 @@ class Builder:
                 self.get_filelist(directory, extension, exclude_patterns) for directory in dirs
             ]
         self.filelist = filelist
-        return filelist
+        return self
 
     def parse_files_attributes(
         self, global_attrs: list, parser: callable = None, lazy: bool = True, nbatches: int = 25
@@ -200,7 +203,7 @@ class Builder:
         lazy : bool, optional
             Whether to parse attributes lazily via dask.delayed, by default True
         nbatches : int, optional
-            [description], by default 25
+            Number of tasks to batch in a single `dask.delayed` call, by default 25
 
         Returns
         -------
@@ -214,10 +217,14 @@ class Builder:
             else:
                 filelist = self.filelist
         else:
-            filelist = self.get_filelist_from_dirs(lazy=False)
+            filelist = self.get_filelist_from_dirs(lazy=False).filelist
         filepaths = list(itertools.chain(*filelist))
-        entries = parse_files_attributes(filepaths, global_attrs, parser, lazy, nbatches)
-        return entries
+        self.entries = parse_files_attributes(filepaths, global_attrs, parser, lazy, nbatches)
+        return self
+
+    def to_df(self):
+        self.df = pd.DataFrame(self.entries)
+        return self
 
 
 def parse_files_attributes(

@@ -1,15 +1,15 @@
-.. image:: https://img.shields.io/github/workflow/status/NCAR/ecg/CI?logo=github&style=for-the-badge
-    :target: https://github.com/NCAR/ecg/actions
+.. image:: https://img.shields.io/github/workflow/status/NCAR/ecgtools/CI?logo=github&style=for-the-badge
+    :target: https://github.com/NCAR/ecgtools/actions
     :alt: GitHub Workflow CI Status
 
-.. image:: https://img.shields.io/github/workflow/status/NCAR/ecg/code-style?label=Code%20Style&style=for-the-badge
-    :target: https://github.com/NCAR/ecg/actions
+.. image:: https://img.shields.io/github/workflow/status/NCAR/ecgtools/code-style?label=Code%20Style&style=for-the-badge
+    :target: https://github.com/NCAR/ecgtools/actions
     :alt: GitHub Workflow Code Style Status
 
-.. image:: https://img.shields.io/codecov/c/github/NCAR/ecg.svg?style=for-the-badge
-    :target: https://codecov.io/gh/NCAR/ecg
+.. image:: https://img.shields.io/codecov/c/github/NCAR/ecgtools.svg?style=for-the-badge
+    :target: https://codecov.io/gh/NCAR/ecgtools
 
-ecg
+ecgtools
 ===
 
 Development

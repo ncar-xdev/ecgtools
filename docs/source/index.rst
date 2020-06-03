@@ -13,5 +13,5 @@ Feedback
 ========
 
 
-If you encounter any errors or problems with **ecg**,
-please open an issue at the GitHub http://github.com/NCAR/ecg main repository.
+If you encounter any errors or problems with **ecgtools**,
+please open an issue at the GitHub http://github.com/NCAR/ecgtools main repository.
