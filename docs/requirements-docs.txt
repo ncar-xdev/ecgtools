@@ -1,5 +1,6 @@
 numpydoc
-sphinx-rtd-theme
+pydata-sphinx-theme
 nbsphinx
+ipykernel
 ipython
 -r ../requirements.txt

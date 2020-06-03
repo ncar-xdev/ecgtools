@@ -10,7 +10,7 @@
     :target: https://codecov.io/gh/NCAR/ecgtools
 
 ecgtools
-===
+========
 
 Development
 ------------

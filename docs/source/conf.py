@@ -41,7 +41,7 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.intersphinx',
     'sphinx.ext.extlinks',
-    'numpydoc',
+    'sphinx.ext.napoleon',
     'IPython.sphinxext.ipython_console_highlighting',
     'IPython.sphinxext.ipython_directive',
     'nbsphinx',
@@ -60,14 +60,17 @@ source_suffix = '.rst'
 
 # Enable notebook execution
 # https://nbsphinx.readthedocs.io/en/0.4.2/never-execute.html
-# nbsphinx_execute = 'auto'
+nbsphinx_execute = 'auto'
 # Allow errors in all notebooks by
 nbsphinx_allow_errors = True
 
 # Disable cell timeout
 nbsphinx_timeout = -1
 
+autosummary_generate = []
 
+# Otherwise, the Return parameter list looks different from the Parameters list
+napoleon_use_rtype = False
 # The encoding of source files.
 # source_encoding = 'utf-8-sig'
 
@@ -130,7 +133,7 @@ pygments_style = 'sphinx'
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'pydata_sphinx_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the

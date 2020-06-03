@@ -74,8 +74,7 @@ class Builder:
 
         Returns
         -------
-        list
-            A list directories.
+        `ecgtools.Builder`
         """
         if root_path is None:
             root_path = self.root_path
@@ -103,11 +102,10 @@ class Builder:
             File extension, by default None
         exclude_patterns : list, optional
             Directory, file patterns to exclude during catalog generation, by default None
-
         Returns
         -------
         list
-            A list of files.
+          A list of files
         """
         import subprocess
         import fnmatch
@@ -165,8 +163,7 @@ class Builder:
 
         Returns
         -------
-        list
-            A list of files.
+        `ecgtools.Builder`
         """
 
         if dirs is None:
@@ -191,7 +188,8 @@ class Builder:
         self, global_attrs: list, parser: callable = None, lazy: bool = True, nbatches: int = 25
     ):
         """
-        Harvest attributes for a list of files.
+        Harvest attributes for a list of files. This method produces a list of dictionaries.
+        Each dictionary contains attributes harvested from an individual file.
 
         Parameters
         ----------
@@ -207,9 +205,7 @@ class Builder:
 
         Returns
         -------
-        list
-            A list of dictionaries. Each dictionary contains attributes harvested
-            from an individual file.
+        `ecgtools.Builder`
         """
         if self.filelist:
             if dask.is_dask_collection(self.filelist[0]):
@@ -223,6 +219,14 @@ class Builder:
         return self
 
     def to_df(self):
+        """
+        Create catalog as a Pandas DataFrame.
+
+        Returns
+        -------
+        `ecgtools.Builder`
+
+        """
         self.df = pd.DataFrame(self.entries)
         return self
 
