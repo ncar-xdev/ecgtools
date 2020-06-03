@@ -6,6 +6,10 @@ import xarray as xr
 
 
 class Builder:
+    """
+    Generates a catalog from a list of files.
+    """
+
     def __init__(
         self,
         root_path: str,
@@ -13,6 +17,26 @@ class Builder:
         depth: int = None,
         exclude_patterns: list = None,
     ):
+        """
+        Generate ESM catalog from a list of files.
+
+        Parameters
+        ----------
+        root_path : str
+            Path of root directory.
+        extension : str, optional
+            File extension, by default None. If None, the builder will look for files with
+            "*.nc" extension.
+        depth : int, optional
+            Recursion depth. Recursively crawl `root_path` up to a specified depth, by default None
+        exclude_patterns : list, optional
+            Directory, file patterns to exclude during catalog generation, by default None
+
+        Raises
+        ------
+        FileNotFoundError
+            When `root_path` does not exist.
+        """
         self.root_path = Path(root_path)
         if not self.root_path.is_dir():
             raise FileNotFoundError(f'{root_path} directory does not exist')
@@ -34,6 +58,22 @@ class Builder:
             self.exclude_patterns = exclude_patterns
 
     def get_directories(self, root_path: str = None, depth: int = None):
+        """
+        Walk `root_path`'s subdirectories and returns a list of directories
+        up to the specified depth from `root_path`.
+
+        Parameters
+        ----------
+        root_path : str, optional
+            Root path, by default None
+        depth : int, optional
+            Recursion depth. Recursively walk `root_path` to a specified depth, by default None
+
+        Returns
+        -------
+        list
+            A list directories.
+        """
         if root_path is None:
             root_path = self.root_path
 
@@ -49,6 +89,23 @@ class Builder:
         return dirs
 
     def get_filelist(self, directory: str, extension: str = None, exclude_patterns: list = None):
+        """
+        Get a list of all files (with specified extension) under a directory.
+
+        Parameters
+        ----------
+        directory : str
+            Directory path to crawl.
+        extension : str, optional
+            File extension, by default None
+        exclude_patterns : list, optional
+            Directory, file patterns to exclude during catalog generation, by default None
+
+        Returns
+        -------
+        list
+            A list of files.
+        """
         import subprocess
         import fnmatch
 
@@ -87,6 +144,27 @@ class Builder:
         exclude_patterns: list = None,
         lazy: bool = True,
     ):
+        """
+        Get a list of files from a list of directories.
+
+        Parameters
+        ----------
+        extension : str, optional
+            File extension, by default None.
+        dirs : list, optional
+            An explicit list of directories, by default None
+        depth : int, optional
+            Recursion depth. Recursively walk root_path to a specified depth, by default None
+        exclude_patterns : list, optional
+            Directory, file patterns to exclude during catalog generation, by default None
+        lazy : bool, optional
+            Whether to parse attributes lazily via dask.delayed, by default True
+
+        Returns
+        -------
+        list
+            A list of files.
+        """
 
         if dirs is None:
             if not self.dirs:
@@ -109,6 +187,27 @@ class Builder:
     def parse_files_attributes(
         self, global_attrs: list, parser: callable = None, lazy: bool = True, nbatches: int = 25
     ):
+        """
+        Harvest attributes for a list of files.
+
+        Parameters
+        ----------
+        global_attrs : list
+            A list of global attributes to harvest from xarray.Dataset
+        parser : callable, optional
+            A function (or callable object) that will be called to parse
+            attributes from a given file/filepath, by default None
+        lazy : bool, optional
+            Whether to parse attributes lazily via dask.delayed, by default True
+        nbatches : int, optional
+            [description], by default 25
+
+        Returns
+        -------
+        list
+            A list of dictionaries. Each dictionary contains attributes harvested
+            from an individual file.
+        """
         if self.filelist:
             if dask.is_dask_collection(self.filelist[0]):
                 filelist = self.filelist.compute()
@@ -128,6 +227,24 @@ def parse_files_attributes(
     lazy: bool = True,
     nbatches: int = 25,
 ):
+    """
+    Harvest attributes for a list of files.
+
+    Parameters
+    ----------
+    filepaths : list
+        an explicit list of files.
+    global_attrs : list
+        A list of global attributes to harvest from xarray.Dataset
+    parser : callable, optional
+        A function (or callable object) that will be called to parse
+        attributes from a given file/filepath, by default None
+    lazy : bool, optional
+        Whether to parse attributes lazily via dask.delayed, by default True
+    nbatches : int, optional
+        Number of tasks to batch in a single `dask.delayed` call, by default 25
+    """
+
     def batch(seq):
         sub_results = []
         for x in seq:
@@ -149,6 +266,24 @@ def parse_files_attributes(
 
 
 def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable = None):
+    """
+    Single file attributes harvesting
+
+    Parameters
+    ----------
+    filepath : str
+        Path of a file.
+    global_attrs : list
+        A list of global attributes to harvest from xarray.Dataset
+    parser : callable, optional
+        A function (or callable object) that will be called to parse
+        attributes from a given file/filepath, by default None, by default None
+
+    Returns
+    -------
+    dict
+        A dictionary of attributes harvested from the input file.
+    """
 
     results = {'path': filepath}
     if parser is not None:

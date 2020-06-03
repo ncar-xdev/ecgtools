@@ -10,6 +10,30 @@ def default_cmip6_ds_parser(
     attrs_mapping: dict = None,
     add_dim: bool = True,
 ):
+    """
+    Function that harvests global attributes and variable attributes
+    for CMIP6 netCDF output.
+
+    Parameters
+    ----------
+    filepath : str
+        [description]
+    global_attrs : list
+        global attributes to extract from the netCDF file.
+    variable_attrs : list, optional
+        variable attributes to extract from the netCDF file, by default None
+    attrs_mapping : dict, optional
+        A mapping to use to rename some keys/attributes harvested from
+        the netCDF file, by default None
+    add_dim : bool, optional
+        Whether to add variable's dimensionality information to harvested
+        attributes, by default True
+
+    Returns
+    -------
+    dict
+        A dictionary of attributes harvested from the input CMIP6 netCDF file.
+    """
     try:
         results = {'path': filepath}
         ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True, chunks={})
