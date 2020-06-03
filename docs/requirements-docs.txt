@@ -2,3 +2,4 @@ numpydoc
 sphinx-rtd-theme
 nbsphinx
 ipython
+-r ../requirements.txt
