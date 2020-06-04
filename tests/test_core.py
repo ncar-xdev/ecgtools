@@ -47,7 +47,7 @@ def test_builder_invalid_root_path():
 
 @pytest.mark.parametrize('root_path, depth, num_dirs', [(cmip6_root_path, 3, 18)])
 def test_builder(root_path, depth, num_dirs):
-    b = Builder(root_path, depth=depth).get_directories().get_filelist_from_dirs()
+    b = Builder(root_path, depth=depth)._get_directories()._get_filelist_from_dirs()
     directories = b.dirs
     filelist = b.filelist
     assert isinstance(directories[0], Path)
@@ -61,7 +61,7 @@ def test_builder(root_path, depth, num_dirs):
 def test_cmip6_parser(root_path, depth, lazy):
     b = Builder(
         root_path, depth=depth, extension='*.nc', exclude_patterns=['*/files/*', '*/latest/*'],
-    ).get_filelist_from_dirs(lazy=lazy)
+    )._get_filelist_from_dirs(lazy=lazy)
     filelist = b.filelist
     filelist = sorted(list(itertools.chain(*filelist)))
 

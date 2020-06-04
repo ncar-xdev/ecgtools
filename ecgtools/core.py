@@ -60,7 +60,7 @@ class Builder:
         else:
             self.exclude_patterns = exclude_patterns
 
-    def get_directories(self, root_path: str = None, depth: int = None):
+    def _get_directories(self, root_path: str = None, depth: int = None):
         """
         Walk `root_path`'s subdirectories and returns a list of directories
         up to the specified depth from `root_path`.
@@ -90,7 +90,7 @@ class Builder:
         self.dirs = dirs
         return self
 
-    def get_filelist(self, directory: str, extension: str = None, exclude_patterns: list = None):
+    def _get_filelist(self, directory: str, extension: str = None, exclude_patterns: list = None):
         """
         Get a list of all files (with specified extension) under a directory.
 
@@ -135,9 +135,9 @@ class Builder:
             filelist = list(filter(filter_files, output))
             return filelist
 
-    get_filelist_delayed = dask.delayed(get_filelist)
+    _get_filelist_delayed = dask.delayed(_get_filelist)
 
-    def get_filelist_from_dirs(
+    def _get_filelist_from_dirs(
         self,
         extension: str = None,
         dirs: list = None,
@@ -168,24 +168,24 @@ class Builder:
 
         if dirs is None:
             if not self.dirs:
-                self.get_directories(depth=depth)
+                self._get_directories(depth=depth)
                 dirs = self.dirs.copy()
             else:
                 dirs = self.dirs.copy()
         if lazy:
             filelist = [
-                self.get_filelist_delayed(directory, extension, exclude_patterns)
+                self._get_filelist_delayed(directory, extension, exclude_patterns)
                 for directory in dirs
             ]
         else:
             filelist = [
-                self.get_filelist(directory, extension, exclude_patterns) for directory in dirs
+                self._get_filelist(directory, extension, exclude_patterns) for directory in dirs
             ]
         self.filelist = filelist
         return self
 
     def parse_files_attributes(
-        self, global_attrs: list, parser: callable = None, lazy: bool = True, nbatches: int = 25
+        self, global_attrs: list, parser: callable = None, lazy: bool = True, nbatches: int = 25,
     ):
         """
         Harvest attributes for a list of files. This method produces a list of dictionaries.
@@ -213,7 +213,7 @@ class Builder:
             else:
                 filelist = self.filelist
         else:
-            filelist = self.get_filelist_from_dirs(lazy=False).filelist
+            filelist = self._get_filelist_from_dirs(lazy=False).filelist
         filepaths = list(itertools.chain(*filelist))
         self.entries = parse_files_attributes(filepaths, global_attrs, parser, lazy, nbatches)
         return self
