@@ -218,9 +218,19 @@ class Builder:
         self.entries = parse_files_attributes(filepaths, global_attrs, parser, lazy, nbatches)
         return self
 
-    def to_df(self):
+    def create_catalog(self, path: str = None, **kwargs):
         """
-        Create catalog as a Pandas DataFrame.
+        Create catalog as a Pandas DataFrame, and write it to a comma-separated
+        values (csv) file if `path` is specified.
+
+        Parameters
+        ----------
+        path : str
+          File path, default None.
+
+        **kwargs
+           Additional keyword arguments are passed through to the
+           :py:class:`~pandas.DataFrame.to_csv` method.
 
         Returns
         -------
@@ -228,6 +238,8 @@ class Builder:
 
         """
         self.df = pd.DataFrame(self.entries)
+        if path:
+            self.df.to_csv(path, **kwargs)
         return self
 
 

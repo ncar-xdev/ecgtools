@@ -13,4 +13,4 @@ Builder Object
 
    .. automethod:: __init__
    .. automethod:: parse_files_attributes
-   .. automethod:: to_df
+   .. automethod:: create_catalog
