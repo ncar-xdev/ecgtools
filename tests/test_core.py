@@ -2,7 +2,10 @@ import functools
 import itertools
 import os
 from pathlib import Path
+from tempfile import TemporaryDirectory
 
+import intake
+import pandas as pd
 import pytest
 
 from ecgtools import Builder, parse_files_attributes
@@ -126,3 +129,19 @@ def test_parse_file_attributes(filepath, global_attrs, parser, expected):
     attrs = _parse_file_attributes(filepath, global_attrs, parser)
     for key in global_attrs:
         assert attrs[key] == expected[key]
+
+
+@pytest.mark.parametrize('root_path, parser', [(cmip6_root_path, None)])
+def test_create_catalog(root_path, parser):
+    builder = Builder(root_path=root_path)
+
+    with TemporaryDirectory() as local_dir:
+        catalog_file = f'{local_dir}/my_catalog.csv'
+
+        builder = builder.parse_files_attributes([], parser, lazy=False).create_catalog(
+            catalog_file, 'path', variable_column='variable_id', data_format='netcdf'
+        )
+
+        path = f'{local_dir}/my_catalog.json'
+        col = intake.open_esm_datastore(path)
+        pd.testing.assert_frame_equal(col.df, builder.df)

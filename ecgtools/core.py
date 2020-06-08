@@ -1,5 +1,8 @@
 import itertools
+import json
+from collections import OrderedDict
 from pathlib import Path
+from typing import List
 
 import dask
 import pandas as pd
@@ -218,28 +221,120 @@ class Builder:
         self.entries = parse_files_attributes(filepaths, global_attrs, parser, lazy, nbatches)
         return self
 
-    def create_catalog(self, path: str = None, **kwargs):
+    def create_catalog(
+        self,
+        catalog_file: str,
+        path_column: str,
+        variable_column: str,
+        data_format: str = None,
+        format_column: str = None,
+        groupby_attrs: list = None,
+        aggregations: List[dict] = None,
+        esmcat_version: str = None,
+        cat_id: str = None,
+        description: str = None,
+        attributes: List[dict] = None,
+        **kwargs,
+    ):
+
         """
-        Create catalog as a Pandas DataFrame, and write it to a comma-separated
-        values (csv) file if `path` is specified.
+        Create a catalog, write it to a comma-separated
+        values (CSV) file, and create a corresponding JSON file
+        according to ESM collection specification defined at
+        https://github.com/NCAR/esm-collection-spec/.
 
         Parameters
         ----------
-        path : str
-          File path, default None.
-
-        **kwargs
-           Additional keyword arguments are passed through to the
-           :py:class:`~pandas.DataFrame.to_csv` method.
+        catalog_file : str
+           Path to a the CSV file in which catalog contents will be persisted.
+        path_column : str
+           The name of the column containing the path to the asset.
+           Must be in the header of the CSV file.
+        variable_column : str
+            Name of the attribute column in csv file that contains the variable name.
+        data_format : str
+            The data format. Valid values are netcdf and zarr.
+            If specified, it means that all data in the catalog is the same type.
+            Mutually exclusive with `format_column`.
+        format_column : str
+            The column name which contains the data format, allowing for multiple data assets
+            (file formats) types in one catalog. Mutually exclusive with `data_format`.
+        groupby_attrs : list
+            Column names (attributes) that define data sets that can be aggegrated,
+            default None
+        aggregations : List[dict]
+            List of aggregations to apply to query results, default None
+        esmcat_version : str
+            The ESM Catalog version the collection implements, default None
+        cat_id : str
+            Identifier for the collection, default None
+        description : str
+            Detailed multi-line description to fully explain the collection,
+            default None
+        attributes : List[dict]
+            A list of attributes. An attribute dictionary describes a column
+            in the catalog CSV file.
+        kwargs : Additional keyword arguments are passed through to the
+                 :py:class:`~pandas.DataFrame.to_csv` method.
 
         Returns
         -------
         `ecgtools.Builder`
 
+        Notes
+        -----
+        See https://github.com/NCAR/esm-collection-spec/blob/master/collection-spec/collection-spec.md
+        for more details on ESM collection specification.
+
         """
+
         self.df = pd.DataFrame(self.entries)
-        if path:
-            self.df.to_csv(path, **kwargs)
+
+        esmcol_data = OrderedDict()
+        if esmcat_version is None:
+            esmcat_version = '0.0.1'
+
+        if cat_id is None:
+            cat_id = ''
+
+        if description is None:
+            description = ''
+        esmcol_data['esmcat_version'] = esmcat_version
+        esmcol_data['id'] = cat_id
+        esmcol_data['description'] = description
+        esmcol_data['catalog_file'] = catalog_file
+        if attributes is None:
+            attributes = []
+            for column in self.df.columns:
+                attributes.append({'column_name': column, 'vocabulary': ''})
+
+        esmcol_data['attributes'] = attributes
+        esmcol_data['assets'] = {'column_name': path_column}
+        if (data_format is not None) and (format_column is not None):
+            raise ValueError('data_format and format_column are mutually exclusive')
+
+        if data_format is not None:
+            esmcol_data['assets']['format'] = data_format
+        else:
+            esmcol_data['assets']['format_column_name'] = format_column
+        if groupby_attrs is None:
+            groupby_attrs = [path_column]
+
+        if aggregations is None:
+            aggregations = []
+        esmcol_data['aggregation_control'] = {
+            'variable_column_name': variable_column,
+            'groupby_attrs': groupby_attrs,
+            'aggregations': aggregations,
+        }
+
+        json_path = f'{catalog_file.split(".")[0]}.json'
+
+        with open(json_path, mode='w') as outfile:
+            json.dump(esmcol_data, outfile, indent=2)
+
+        self.df.to_csv(catalog_file, index=False, **kwargs)
+
         return self
 
 
