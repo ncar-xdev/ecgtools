@@ -17,10 +17,14 @@ class Builder:
     def __init__(
         self,
         root_path: str,
-        extension: str = None,
-        depth: int = None,
+        extension: str = '*.nc',
+        depth: int = 0,
         exclude_patterns: list = None,
-    ):
+        global_attrs: list = None,
+        parser: callable = None,
+        lazy: bool = True,
+        nbatches: int = 25,
+    ) -> 'Builder':
         """
         Generate ESM catalog from a list of files.
 
@@ -35,6 +39,15 @@ class Builder:
             Recursion depth. Recursively crawl `root_path` up to a specified depth, by default None
         exclude_patterns : list, optional
             Directory, file patterns to exclude during catalog generation, by default None
+        global_attrs : list
+            A list of global attributes to harvest from xarray.Dataset
+        parser : callable, optional
+            A function (or callable object) that will be called to parse
+            attributes from a given file/filepath, by default None
+        lazy : bool, optional
+            Whether to parse attributes lazily via dask.delayed, by default True
+        nbatches : int, optional
+            Number of tasks to batch in a single `dask.delayed` call, by default 25
 
         Raises
         ------
@@ -44,24 +57,19 @@ class Builder:
         self.root_path = Path(root_path)
         if not self.root_path.is_dir():
             raise FileNotFoundError(f'{root_path} directory does not exist')
+        if parser is not None and not callable(parser):
+            raise TypeError('parser must be callable.')
         self.dirs = []
         self.filelist = []
-        self.entries = []
         self.df = None
-        if extension is None:
-            self.extension = '*.nc'
-        else:
-            self.extension = extension
-
-        if depth is None:
-            self.depth = 0
-        else:
-            self.depth = depth
-
-        if exclude_patterns is None:
-            self.exclude_patterns = []
-        else:
-            self.exclude_patterns = exclude_patterns
+        self.esmcol_data = None
+        self.global_attrs = global_attrs or []
+        self.parser = parser
+        self.lazy = lazy
+        self.nbatches = nbatches
+        self.extension = extension
+        self.depth = depth
+        self.exclude_patterns = exclude_patterns or []
 
     def _get_directories(self, root_path: str = None, depth: int = None):
         """
@@ -131,8 +139,8 @@ class Builder:
             proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
             output = proc.stdout.read().decode('utf-8').split()
 
-        except Exception as e:
-            print(e)
+        except Exception as exc:
+            print(exc)
 
         finally:
             filelist = list(filter(filter_files, output))
@@ -187,28 +195,10 @@ class Builder:
         self.filelist = filelist
         return self
 
-    def parse_files_attributes(
-        self, global_attrs: list, parser: callable = None, lazy: bool = True, nbatches: int = 25,
-    ):
+    def build(self) -> 'Builder':
         """
         Harvest attributes for a list of files. This method produces a list of dictionaries.
         Each dictionary contains attributes harvested from an individual file.
-
-        Parameters
-        ----------
-        global_attrs : list
-            A list of global attributes to harvest from xarray.Dataset
-        parser : callable, optional
-            A function (or callable object) that will be called to parse
-            attributes from a given file/filepath, by default None
-        lazy : bool, optional
-            Whether to parse attributes lazily via dask.delayed, by default True
-        nbatches : int, optional
-            Number of tasks to batch in a single `dask.delayed` call, by default 25
-
-        Returns
-        -------
-        `ecgtools.Builder`
         """
         if self.filelist:
             if dask.is_dask_collection(self.filelist[0]):
@@ -218,10 +208,16 @@ class Builder:
         else:
             filelist = self._get_filelist_from_dirs(lazy=False).filelist
         filepaths = list(itertools.chain(*filelist))
-        self.entries = parse_files_attributes(filepaths, global_attrs, parser, lazy, nbatches)
+        entries = parse_files_attributes(
+            filepaths, self.global_attrs, self.parser, self.lazy, self.nbatches
+        )
+
+        if dask.is_dask_collection(entries[0]):
+            entries = dask.compute(*entries)[0]
+        self.df = pd.DataFrame(entries)
         return self
 
-    def create_catalog(
+    def save(
         self,
         catalog_file: str,
         path_column: str,
@@ -235,7 +231,7 @@ class Builder:
         description: str = None,
         attributes: List[dict] = None,
         **kwargs,
-    ):
+    ) -> 'Builder':
 
         """
         Create a catalog, write it to a comma-separated
@@ -288,8 +284,6 @@ class Builder:
 
         """
 
-        self.df = pd.DataFrame(self.entries)
-
         esmcol_data = OrderedDict()
         if esmcat_version is None:
             esmcat_version = '0.0.1'
@@ -328,13 +322,12 @@ class Builder:
             'aggregations': aggregations,
         }
 
+        self.esmcol_data = esmcol_data
         json_path = f'{catalog_file.split(".")[0]}.json'
-
         with open(json_path, mode='w') as outfile:
             json.dump(esmcol_data, outfile, indent=2)
 
         self.df.to_csv(catalog_file, index=False, **kwargs)
-
         return self
 
 
