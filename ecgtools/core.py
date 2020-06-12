@@ -62,6 +62,8 @@ class Builder:
         self.dirs = []
         self.filelist = []
         self.df = None
+        self.old_df = None
+        self.new_df = None
         self.esmcol_data = None
         self.global_attrs = global_attrs or []
         self.parser = parser
@@ -121,19 +123,16 @@ class Builder:
         import subprocess
         import fnmatch
 
+        extension = extension or self.extension
+        exclude_patterns = exclude_patterns or self.exclude_patterns
+        output = []
+
         def filter_files(filelist):
             return not any(
                 fnmatch.fnmatch(filelist, pat=exclude_pattern)
                 for exclude_pattern in exclude_patterns
             )
 
-        if extension is None:
-            extension = self.extension
-
-        if exclude_patterns is None:
-            exclude_patterns = self.exclude_patterns
-
-        output = []
         try:
             cmd = ['find', '-L', directory.as_posix(), '-name', extension]
             proc = subprocess.Popen(cmd, stderr=subprocess.PIPE, stdout=subprocess.PIPE)
@@ -154,7 +153,6 @@ class Builder:
         dirs: list = None,
         depth: int = None,
         exclude_patterns: list = None,
-        lazy: bool = True,
     ):
         """
         Get a list of files from a list of directories.
@@ -169,52 +167,80 @@ class Builder:
             Recursion depth. Recursively walk root_path to a specified depth, by default None
         exclude_patterns : list, optional
             Directory, file patterns to exclude during catalog generation, by default None
-        lazy : bool, optional
-            Whether to parse attributes lazily via dask.delayed, by default True
 
         Returns
         -------
         `ecgtools.Builder`
         """
-
         if dirs is None:
             if not self.dirs:
                 self._get_directories(depth=depth)
                 dirs = self.dirs.copy()
             else:
                 dirs = self.dirs.copy()
-        if lazy:
+        if self.lazy:
             filelist = [
                 self._get_filelist_delayed(directory, extension, exclude_patterns)
                 for directory in dirs
             ]
+            filelist = dask.compute(*filelist)
         else:
             filelist = [
                 self._get_filelist(directory, extension, exclude_patterns) for directory in dirs
             ]
+
+        filelist = list(itertools.chain(*filelist))
         self.filelist = filelist
-        return self
+        return filelist
 
     def build(self) -> 'Builder':
         """
         Harvest attributes for a list of files. This method produces a list of dictionaries.
         Each dictionary contains attributes harvested from an individual file.
         """
-        if self.filelist:
-            if dask.is_dask_collection(self.filelist[0]):
-                filelist = self.filelist.compute()
-            else:
-                filelist = self.filelist
-        else:
-            filelist = self._get_filelist_from_dirs(lazy=False).filelist
-        filepaths = list(itertools.chain(*filelist))
-        entries = parse_files_attributes(
-            filepaths, self.global_attrs, self.parser, self.lazy, self.nbatches
-        )
 
-        if dask.is_dask_collection(entries[0]):
-            entries = dask.compute(*entries)[0]
-        self.df = pd.DataFrame(entries)
+        filelist = self._get_filelist_from_dirs()
+        df = parse_files_attributes(
+            filelist, self.global_attrs, self.parser, self.lazy, self.nbatches
+        )
+        self.df = df
+        return self
+
+    def update(self, catalog_file: str, path_column: str) -> 'Builder':
+        """
+        Update a previously built catalog.
+
+        Parameters
+        ----------
+        catalog_file : str
+           Path to a CSV file for a previously built catalog.
+        path_column : str
+           The name of the column containing the path to the asset.
+           Must be in the header of the CSV file.
+
+        """
+        self.old_df = pd.read_csv(catalog_file)
+        filelist_from_prev_cat = self.old_df[path_column].tolist()
+        filelist = self._get_filelist_from_dirs()
+        # Case 1: The new filelist has files that are not included in the
+        # Previously built catalog
+        files_to_parse = list(set(filelist) - set(filelist_from_prev_cat))
+        if files_to_parse:
+            self.new_df = parse_files_attributes(
+                files_to_parse, self.global_attrs, self.parser, self.lazy, self.nbatches
+            )
+        else:
+            self.new_df = pd.DataFrame()
+
+        # Case 2: Some files included in the previously built catalog may not existing anymore
+        # We need to remove these files in the new version of the catalog
+        non_existing_assets = list(set(filelist_from_prev_cat) - set(filelist))
+        if non_existing_assets:
+            old_df = self.old_df[~self.old_df[path_column].isin(non_existing_assets)].copy()
+        else:
+            old_df = self.old_df.copy()
+
+        self.df = pd.concat([old_df, self.new_df], ignore_index=True)
         return self
 
     def save(
@@ -337,7 +363,7 @@ def parse_files_attributes(
     parser: callable = None,
     lazy: bool = True,
     nbatches: int = 25,
-):
+) -> pd.DataFrame:
     """
     Harvest attributes for a list of files.
 
@@ -373,7 +399,12 @@ def parse_files_attributes(
             results.append(result_batch)
     else:
         results = [_parse_file_attributes(filepath, global_attrs, parser) for filepath in filepaths]
-    return results
+
+    if dask.is_dask_collection(results[0]):
+        results = dask.compute(*results)
+        results = list(itertools.chain(*results))
+    df = pd.DataFrame(results)
+    return df
 
 
 def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable = None):
@@ -392,8 +423,8 @@ def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable =
 
     Returns
     -------
-    dict
-        A dictionary of attributes harvested from the input file.
+    df
+        A dataframe of attributes harvested from the input file.
     """
 
     results = {'path': filepath}

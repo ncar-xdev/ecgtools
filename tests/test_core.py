@@ -1,5 +1,4 @@
 import functools
-import itertools
 import os
 from pathlib import Path
 from tempfile import TemporaryDirectory
@@ -14,7 +13,6 @@ from ecgtools.parsers import cmip6_default_parser
 
 here = Path(os.path.dirname(__file__))
 cmip6_root_path = here.parent / 'sample_data' / 'cmip' / 'CMIP6'
-
 
 cmip6_global_attrs = [
     'activity_id',
@@ -58,10 +56,12 @@ def test_builder_invalid_parser():
     'root_path, depth, global_attrs, lazy, parser, expected_df_shape',
     [
         (cmip6_root_path, 3, cmip6_global_attrs, False, cmip6_parser, (59, 19)),
-        (cmip6_root_path, 1, cmip6_global_attrs, False, None, (59, 14)),
+        (cmip6_root_path, 5, cmip6_global_attrs, True, cmip6_parser, (59, 19)),
+        (cmip6_root_path, 0, cmip6_global_attrs, False, None, (59, 14)),
+        (cmip6_root_path, 4, cmip6_global_attrs, True, None, (59, 14)),
     ],
 )
-def test_builder_parser(root_path, depth, global_attrs, lazy, parser, expected_df_shape):
+def test_builder_build(root_path, depth, global_attrs, lazy, parser, expected_df_shape):
     b = Builder(
         root_path,
         depth=depth,
@@ -74,9 +74,48 @@ def test_builder_parser(root_path, depth, global_attrs, lazy, parser, expected_d
 
     assert b.df.shape == expected_df_shape
     assert isinstance(b.df, pd.DataFrame)
-    assert len(list(itertools.chain(*b.filelist))) == len(b.df)
+    assert len(b.filelist) == len(b.df)
     intersection = set(global_attrs).intersection(set(b.df.columns))
     assert intersection.issubset(set(global_attrs))
+
+
+@pytest.mark.parametrize('root_path, parser', [(cmip6_root_path, None)])
+def test_builder_save(root_path, parser):
+    builder = Builder(root_path=root_path)
+
+    with TemporaryDirectory() as local_dir:
+        catalog_file = f'{local_dir}/my_catalog.csv'
+
+        builder = builder.build().save(
+            catalog_file, 'path', variable_column='variable_id', data_format='netcdf'
+        )
+        path = f'{local_dir}/my_catalog.json'
+        col = intake.open_esm_datastore(path)
+        pd.testing.assert_frame_equal(col.df, builder.df)
+        print(builder.df.shape)
+
+
+@pytest.mark.parametrize(
+    'root_path, parser, num_items, dummy_assets',
+    [(cmip6_root_path, None, 30, {}), (cmip6_root_path, None, 59, {'path': 'dummy.nc'})],
+)
+def test_builder_update(root_path, parser, num_items, dummy_assets):
+
+    with TemporaryDirectory() as local_dir:
+        catalog_file = f'{local_dir}/dummy.csv'
+        builder = Builder(
+            root_path=root_path, exclude_patterns=['*/files/*', '*/latest/*'], parser=parser
+        )
+        builder = builder.build()
+        builder.save(catalog_file, 'path', variable_column='variable_id', data_format='netcdf')
+        df = pd.read_csv(catalog_file).head(num_items)
+        if dummy_assets:
+            df = df.append(dummy_assets, ignore_index=True)
+
+        df.to_csv(catalog_file, index=False)
+        builder = builder.update(catalog_file, path_column='path')
+        assert builder.old_df.size == num_items + len(dummy_assets)
+        assert (builder.df.size - builder.old_df.size) == builder.new_df.size - len(dummy_assets)
 
 
 def myparser(filepath, global_attrs):
@@ -112,18 +151,3 @@ def test_parse_file_attributes(filepath, global_attrs, parser, expected):
     attrs = _parse_file_attributes(filepath, global_attrs, parser)
     for key in global_attrs:
         assert attrs[key] == expected[key]
-
-
-@pytest.mark.parametrize('root_path, parser', [(cmip6_root_path, None)])
-def test_save(root_path, parser):
-    builder = Builder(root_path=root_path)
-
-    with TemporaryDirectory() as local_dir:
-        catalog_file = f'{local_dir}/my_catalog.csv'
-
-        builder = builder.build().save(
-            catalog_file, 'path', variable_column='variable_id', data_format='netcdf'
-        )
-        path = f'{local_dir}/my_catalog.json'
-        col = intake.open_esm_datastore(path)
-        pd.testing.assert_frame_equal(col.df, builder.df)
