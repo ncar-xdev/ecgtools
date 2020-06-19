@@ -238,18 +238,11 @@ class Builder:
         """
 
         esmcol_data = OrderedDict()
-        if esmcat_version is None:
-            esmcat_version = '0.0.1'
+        esmcol_data['esmcat_version'] = esmcat_version or '0.0.1'
+        esmcol_data['id'] = cat_id or ''
+        esmcol_data['description'] = description or ''
+        esmcol_data['attributes'] = None
 
-        if cat_id is None:
-            cat_id = ''
-
-        if description is None:
-            description = ''
-        esmcol_data['esmcat_version'] = esmcat_version
-        esmcol_data['id'] = cat_id
-        esmcol_data['description'] = description
-        esmcol_data['attributes'] = attributes
         esmcol_data['assets'] = {'column_name': path_column}
         if (data_format is not None) and (format_column is not None):
             raise ValueError('data_format and format_column are mutually exclusive')
@@ -258,11 +251,8 @@ class Builder:
             esmcol_data['assets']['format'] = data_format
         else:
             esmcol_data['assets']['format_column_name'] = format_column
-        if groupby_attrs is None:
-            groupby_attrs = [path_column]
-
-        if aggregations is None:
-            aggregations = []
+        groupby_attrs = groupby_attrs or [path_column]
+        aggregations = aggregations or []
         esmcol_data['aggregation_control'] = {
             'variable_column_name': variable_column,
             'groupby_attrs': groupby_attrs,
@@ -277,6 +267,7 @@ class Builder:
             for column in df.columns:
                 attributes.append({'column_name': column, 'vocabulary': ''})
 
+        esmcol_data['attributes'] = attributes
         self.esmcol_data = esmcol_data
         self.df = df
         return self

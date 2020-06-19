@@ -73,6 +73,9 @@ def test_builder_build(root_path, depth, lazy, parser, expected_df_shape):
         parser=parser,
     ).build(path_column='path', variable_column='variable_id', data_format='netcdf')
 
+    keys = {'esmcat_version', 'id', 'description', 'attributes', 'assets', 'aggregation_control'}
+    assert set(b.esmcol_data.keys()) == keys
+
     assert b.df.shape == expected_df_shape
     assert isinstance(b.df, pd.DataFrame)
     assert len(b.filelist) == len(b.df)
