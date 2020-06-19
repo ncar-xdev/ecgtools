@@ -6,7 +6,6 @@ from typing import List
 
 import dask
 import pandas as pd
-import xarray as xr
 
 
 class Builder:
@@ -20,7 +19,6 @@ class Builder:
         extension: str = '*.nc',
         depth: int = 0,
         exclude_patterns: list = None,
-        global_attrs: list = None,
         parser: callable = None,
         lazy: bool = True,
         nbatches: int = 25,
@@ -39,8 +37,6 @@ class Builder:
             Recursion depth. Recursively crawl `root_path` up to a specified depth, by default None
         exclude_patterns : list, optional
             Directory, file patterns to exclude during catalog generation, by default None
-        global_attrs : list
-            A list of global attributes to harvest from xarray.Dataset
         parser : callable, optional
             A function (or callable object) that will be called to parse
             attributes from a given file/filepath, by default None
@@ -65,7 +61,6 @@ class Builder:
         self.old_df = None
         self.new_df = None
         self.esmcol_data = None
-        self.global_attrs = global_attrs or []
         self.parser = parser
         self.lazy = lazy
         self.nbatches = nbatches
@@ -193,59 +188,8 @@ class Builder:
         self.filelist = filelist
         return filelist
 
-    def build(self) -> 'Builder':
-        """
-        Harvest attributes for a list of files. This method produces a list of dictionaries.
-        Each dictionary contains attributes harvested from an individual file.
-        """
-
-        filelist = self._get_filelist_from_dirs()
-        df = parse_files_attributes(
-            filelist, self.global_attrs, self.parser, self.lazy, self.nbatches
-        )
-        self.df = df
-        return self
-
-    def update(self, catalog_file: str, path_column: str) -> 'Builder':
-        """
-        Update a previously built catalog.
-
-        Parameters
-        ----------
-        catalog_file : str
-           Path to a CSV file for a previously built catalog.
-        path_column : str
-           The name of the column containing the path to the asset.
-           Must be in the header of the CSV file.
-
-        """
-        self.old_df = pd.read_csv(catalog_file)
-        filelist_from_prev_cat = self.old_df[path_column].tolist()
-        filelist = self._get_filelist_from_dirs()
-        # Case 1: The new filelist has files that are not included in the
-        # Previously built catalog
-        files_to_parse = list(set(filelist) - set(filelist_from_prev_cat))
-        if files_to_parse:
-            self.new_df = parse_files_attributes(
-                files_to_parse, self.global_attrs, self.parser, self.lazy, self.nbatches
-            )
-        else:
-            self.new_df = pd.DataFrame()
-
-        # Case 2: Some files included in the previously built catalog may not existing anymore
-        # We need to remove these files in the new version of the catalog
-        non_existing_assets = list(set(filelist_from_prev_cat) - set(filelist))
-        if non_existing_assets:
-            old_df = self.old_df[~self.old_df[path_column].isin(non_existing_assets)].copy()
-        else:
-            old_df = self.old_df.copy()
-
-        self.df = pd.concat([old_df, self.new_df], ignore_index=True)
-        return self
-
-    def save(
+    def build(
         self,
-        catalog_file: str,
         path_column: str,
         variable_column: str,
         data_format: str = None,
@@ -256,19 +200,14 @@ class Builder:
         cat_id: str = None,
         description: str = None,
         attributes: List[dict] = None,
-        **kwargs,
     ) -> 'Builder':
-
         """
-        Create a catalog, write it to a comma-separated
-        values (CSV) file, and create a corresponding JSON file
-        according to ESM collection specification defined at
-        https://github.com/NCAR/esm-collection-spec/.
+        Harvest attributes for a list of files. This method produces a pandas dataframe
+        and a corresponding ESM collection dictionary conforming to ESM collection specification
+        defined at https://github.com/NCAR/esm-collection-spec/.
 
         Parameters
-        ----------
-        catalog_file : str
-           Path to a the CSV file in which catalog contents will be persisted.
+        -----------
         path_column : str
            The name of the column containing the path to the asset.
            Must be in the header of the CSV file.
@@ -296,18 +235,6 @@ class Builder:
         attributes : List[dict]
             A list of attributes. An attribute dictionary describes a column
             in the catalog CSV file.
-        kwargs : Additional keyword arguments are passed through to the
-                 :py:class:`~pandas.DataFrame.to_csv` method.
-
-        Returns
-        -------
-        `ecgtools.Builder`
-
-        Notes
-        -----
-        See https://github.com/NCAR/esm-collection-spec/blob/master/collection-spec/collection-spec.md
-        for more details on ESM collection specification.
-
         """
 
         esmcol_data = OrderedDict()
@@ -322,12 +249,6 @@ class Builder:
         esmcol_data['esmcat_version'] = esmcat_version
         esmcol_data['id'] = cat_id
         esmcol_data['description'] = description
-        esmcol_data['catalog_file'] = catalog_file
-        if attributes is None:
-            attributes = []
-            for column in self.df.columns:
-                attributes.append({'column_name': column, 'vocabulary': ''})
-
         esmcol_data['attributes'] = attributes
         esmcol_data['assets'] = {'column_name': path_column}
         if (data_format is not None) and (format_column is not None):
@@ -348,21 +269,89 @@ class Builder:
             'aggregations': aggregations,
         }
 
+        filelist = self.filelist or self._get_filelist_from_dirs()
+        df = parse_files_attributes(filelist, self.parser, self.lazy, self.nbatches)
+
+        if attributes is None:
+            attributes = []
+            for column in df.columns:
+                attributes.append({'column_name': column, 'vocabulary': ''})
+
         self.esmcol_data = esmcol_data
+        self.df = df
+        return self
+
+    def update(self, catalog_file: str, path_column: str) -> 'Builder':
+        """
+        Update a previously built catalog.
+
+        Parameters
+        ----------
+        catalog_file : str
+           Path to a CSV file for a previously built catalog.
+        path_column : str
+           The name of the column containing the path to the asset.
+           Must be in the header of the CSV file.
+
+        """
+        self.old_df = pd.read_csv(catalog_file)
+        filelist_from_prev_cat = self.old_df[path_column].tolist()
+        filelist = self._get_filelist_from_dirs()
+        # Case 1: The new filelist has files that are not included in the
+        # Previously built catalog
+        files_to_parse = list(set(filelist) - set(filelist_from_prev_cat))
+        if files_to_parse:
+            self.new_df = parse_files_attributes(
+                files_to_parse, self.parser, self.lazy, self.nbatches
+            )
+        else:
+            self.new_df = pd.DataFrame()
+
+        # Case 2: Some files included in the previously built catalog may not existing anymore
+        # We need to remove these files in the new version of the catalog
+        non_existing_assets = list(set(filelist_from_prev_cat) - set(filelist))
+        if non_existing_assets:
+            old_df = self.old_df[~self.old_df[path_column].isin(non_existing_assets)].copy()
+        else:
+            old_df = self.old_df.copy()
+
+        self.df = pd.concat([old_df, self.new_df], ignore_index=True)
+        return self
+
+    def save(self, catalog_file: str, **kwargs,) -> 'Builder':
+
+        """
+        Create a catalog content to files.
+
+        Parameters
+        ----------
+        catalog_file : str
+           Path to a the CSV file in which catalog contents will be persisted.
+        kwargs : Additional keyword arguments are passed through to the
+                 :py:class:`~pandas.DataFrame.to_csv` method.
+
+        Returns
+        -------
+        `ecgtools.Builder`
+
+        Notes
+        -----
+        See https://github.com/NCAR/esm-collection-spec/blob/master/collection-spec/collection-spec.md
+        for more details on ESM collection specification.
+
+        """
+
+        self.esmcol_data['catalog_file'] = catalog_file
         json_path = f'{catalog_file.split(".")[0]}.json'
         with open(json_path, mode='w') as outfile:
-            json.dump(esmcol_data, outfile, indent=2)
+            json.dump(self.esmcol_data, outfile, indent=2)
 
         self.df.to_csv(catalog_file, index=False, **kwargs)
         return self
 
 
 def parse_files_attributes(
-    filepaths: list,
-    global_attrs: list,
-    parser: callable = None,
-    lazy: bool = True,
-    nbatches: int = 25,
+    filepaths: list, parser: callable = None, lazy: bool = True, nbatches: int = 25,
 ) -> pd.DataFrame:
     """
     Harvest attributes for a list of files.
@@ -371,8 +360,6 @@ def parse_files_attributes(
     ----------
     filepaths : list
         an explicit list of files.
-    global_attrs : list
-        A list of global attributes to harvest from xarray.Dataset
     parser : callable, optional
         A function (or callable object) that will be called to parse
         attributes from a given file/filepath, by default None
@@ -385,11 +372,11 @@ def parse_files_attributes(
     def batch(seq):
         sub_results = []
         for x in seq:
-            sub_results.append(_parse_file_attributes(x, global_attrs, parser))
+            sub_results.append(_parse_file_attributes(x, parser))
         return sub_results
 
     if lazy:
-        # Don't Do this: [_parse_file_attributes_delayed(filepath, global_attrs, parser) for filepath in filepaths]
+        # Don't Do this: [_parse_file_attributes_delayed(filepath, parser) for filepath in filepaths]
         # It will produce a very large task graph for large collections. For example, CMIP6 archive would results
         # in a task graph with ~1.5 million tasks. To reduce the number of tasks,
         # we will batch multiple tasks into a single task by creating batches of delayed calls.
@@ -398,16 +385,15 @@ def parse_files_attributes(
             result_batch = dask.delayed(batch)(filepaths[i : i + nbatches])
             results.append(result_batch)
     else:
-        results = [_parse_file_attributes(filepath, global_attrs, parser) for filepath in filepaths]
+        results = [_parse_file_attributes(filepath, parser) for filepath in filepaths]
 
     if dask.is_dask_collection(results[0]):
         results = dask.compute(*results)
         results = list(itertools.chain(*results))
-    df = pd.DataFrame(results)
-    return df
+    return pd.DataFrame(results)
 
 
-def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable = None):
+def _parse_file_attributes(filepath: str, parser: callable = None):
     """
     Single file attributes harvesting
 
@@ -415,8 +401,6 @@ def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable =
     ----------
     filepath : str
         Path of a file.
-    global_attrs : list
-        A list of global attributes to harvest from xarray.Dataset
     parser : callable, optional
         A function (or callable object) that will be called to parse
         attributes from a given file/filepath, by default None, by default None
@@ -429,21 +413,10 @@ def _parse_file_attributes(filepath: str, global_attrs: list, parser: callable =
 
     results = {'path': filepath}
     if parser is not None:
-        x = parser(filepath, global_attrs)
+        x = parser(filepath)
         # Merge x and results dictionaries
         results = {**x, **results}
-        return results
-
-    else:
-        try:
-            ds = xr.open_dataset(filepath, decode_times=False, chunks={})
-            for attr in global_attrs:
-                results[attr] = ds.attrs.get(attr, None)
-
-            return results
-        except Exception as e:
-            print(e)
-            return {}
+    return results
 
 
 _parse_file_attributes_delayed = dask.delayed(_parse_file_attributes)

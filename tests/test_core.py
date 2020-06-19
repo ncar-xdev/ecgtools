@@ -8,7 +8,6 @@ import pandas as pd
 import pytest
 
 from ecgtools import Builder
-from ecgtools.core import _parse_file_attributes
 from ecgtools.parsers import cmip6_default_parser
 
 here = Path(os.path.dirname(__file__))
@@ -38,7 +37,10 @@ cmip6_attrs_mapping = {
 
 
 cmip6_parser = functools.partial(
-    cmip6_default_parser, variable_attrs=cmip6_variable_attrs, attrs_mapping=cmip6_attrs_mapping,
+    cmip6_default_parser,
+    global_attrs=cmip6_global_attrs,
+    variable_attrs=cmip6_variable_attrs,
+    attrs_mapping=cmip6_attrs_mapping,
 )
 
 
@@ -53,30 +55,29 @@ def test_builder_invalid_parser():
 
 
 @pytest.mark.parametrize(
-    'root_path, depth, global_attrs, lazy, parser, expected_df_shape',
+    'root_path, depth, lazy, parser, expected_df_shape',
     [
-        (cmip6_root_path, 3, cmip6_global_attrs, False, cmip6_parser, (59, 19)),
-        (cmip6_root_path, 5, cmip6_global_attrs, True, cmip6_parser, (59, 19)),
-        (cmip6_root_path, 0, cmip6_global_attrs, False, None, (59, 14)),
-        (cmip6_root_path, 4, cmip6_global_attrs, True, None, (59, 14)),
+        (cmip6_root_path, 3, False, cmip6_parser, (59, 19)),
+        (cmip6_root_path, 5, True, cmip6_parser, (59, 19)),
+        (cmip6_root_path, 0, False, None, (59, 1)),
+        (cmip6_root_path, 4, True, None, (59, 1)),
     ],
 )
-def test_builder_build(root_path, depth, global_attrs, lazy, parser, expected_df_shape):
+def test_builder_build(root_path, depth, lazy, parser, expected_df_shape):
     b = Builder(
         root_path,
         depth=depth,
         extension='*.nc',
-        global_attrs=global_attrs,
         exclude_patterns=['*/files/*', '*/latest/*'],
         lazy=lazy,
         parser=parser,
-    ).build()
+    ).build(path_column='path', variable_column='variable_id', data_format='netcdf')
 
     assert b.df.shape == expected_df_shape
     assert isinstance(b.df, pd.DataFrame)
     assert len(b.filelist) == len(b.df)
-    intersection = set(global_attrs).intersection(set(b.df.columns))
-    assert intersection.issubset(set(global_attrs))
+    intersection = set(cmip6_global_attrs).intersection(set(b.df.columns))
+    assert intersection.issubset(set(cmip6_global_attrs))
 
 
 @pytest.mark.parametrize('root_path, parser', [(cmip6_root_path, None)])
@@ -86,9 +87,9 @@ def test_builder_save(root_path, parser):
     with TemporaryDirectory() as local_dir:
         catalog_file = f'{local_dir}/my_catalog.csv'
 
-        builder = builder.build().save(
-            catalog_file, 'path', variable_column='variable_id', data_format='netcdf'
-        )
+        builder = builder.build(
+            path_column='path', variable_column='variable_id', data_format='netcdf'
+        ).save(catalog_file)
         path = f'{local_dir}/my_catalog.json'
         col = intake.open_esm_datastore(path)
         pd.testing.assert_frame_equal(col.df, builder.df)
@@ -106,8 +107,10 @@ def test_builder_update(root_path, parser, num_items, dummy_assets):
         builder = Builder(
             root_path=root_path, exclude_patterns=['*/files/*', '*/latest/*'], parser=parser
         )
-        builder = builder.build()
-        builder.save(catalog_file, 'path', variable_column='variable_id', data_format='netcdf')
+        builder = builder.build(
+            path_column='path', variable_column='variable_id', data_format='netcdf'
+        )
+        builder.save(catalog_file)
         df = pd.read_csv(catalog_file).head(num_items)
         if dummy_assets:
             df = df.append(dummy_assets, ignore_index=True)
@@ -116,38 +119,3 @@ def test_builder_update(root_path, parser, num_items, dummy_assets):
         builder = builder.update(catalog_file, path_column='path')
         assert builder.old_df.size == num_items + len(dummy_assets)
         assert (builder.df.size - builder.old_df.size) == builder.new_df.size - len(dummy_assets)
-
-
-def myparser(filepath, global_attrs):
-    return {'path': filepath, 'foo': 'bar'}
-
-
-@pytest.mark.parametrize(
-    'filepath, global_attrs, parser, expected',
-    [
-        (
-            f'{cmip6_root_path}/CMIP/BCC/BCC-CSM2-MR/abrupt-4xCO2/r1i1p1f1/Amon/tasmax/gn/v20181016/tasmax/tasmax_Amon_BCC-CSM2-MR_abrupt-4xCO2_r1i1p1f1_gn_185001-200012.nc',
-            ['source_id', 'experiment_id', 'table_id', 'grid_label'],
-            None,
-            {
-                'experiment_id': 'abrupt-4xCO2',
-                'table_id': 'Amon',
-                'source_id': 'BCC-CSM2-MR',
-                'grid_label': 'gn',
-            },
-        ),
-        (
-            f'{cmip6_root_path}/CMIP/BCC/BCC-CSM2-MR/abrupt-4xCO2/r1i1p1f1/Amon/tasmax/gn/v20181016/tasmax/tasmax_Amon_BCC-CSM2-MR_abrupt-4xCO2_r1i1p1f1_gn_185001-200012.nc',
-            ['path', 'foo'],
-            myparser,
-            {
-                'path': f'{cmip6_root_path}/CMIP/BCC/BCC-CSM2-MR/abrupt-4xCO2/r1i1p1f1/Amon/tasmax/gn/v20181016/tasmax/tasmax_Amon_BCC-CSM2-MR_abrupt-4xCO2_r1i1p1f1_gn_185001-200012.nc',
-                'foo': 'bar',
-            },
-        ),
-    ],
-)
-def test_parse_file_attributes(filepath, global_attrs, parser, expected):
-    attrs = _parse_file_attributes(filepath, global_attrs, parser)
-    for key in global_attrs:
-        assert attrs[key] == expected[key]
