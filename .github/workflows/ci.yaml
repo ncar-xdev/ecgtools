@@ -66,6 +66,7 @@ jobs:
 
       - name: Install package
         run: |
+          sudo apt-get update && sudo apt-get install pandoc -y
           python -m pip install --upgrade pip
           python -m pip install -e .
 

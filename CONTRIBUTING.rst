@@ -1,12 +1,12 @@
 =============================================
-Contributing to ecg
+Contributing to ecgtools
 =============================================
 
 Contributions are highly welcomed and appreciated.  Every little help counts,
 so do not hesitate!
 
 The following sections cover some general guidelines
-regarding development in ecg for maintainers and contributors.
+regarding development in ecgtools for maintainers and contributors.
 Nothing here is set in stone and can't be changed.
 Feel free to suggest improvements or changes in the workflow.
 
@@ -22,10 +22,10 @@ Feel free to suggest improvements or changes in the workflow.
 Feature requests and feedback
 -----------------------------
 
-Do you like ecg?  Share some love on Twitter or in your blog posts!
+Do you like ecgtools?  Share some love on Twitter or in your blog posts!
 
 We'd also like to hear about your propositions and suggestions.  Feel free to
-`submit them as issues <https://github.com/NCAR/ecg>`_ and:
+`submit them as issues <https://github.com/NCAR/ecgtools>`_ and:
 
 * Explain in detail how they should work.
 * Keep the scope as narrow as possible.  This will make it easier to implement.
@@ -36,13 +36,13 @@ We'd also like to hear about your propositions and suggestions.  Feel free to
 Report bugs
 -----------
 
-Report bugs for ecg in the `issue tracker <https://github.com/NCAR/ecg>`_.
+Report bugs for ecgtools in the `issue tracker <https://github.com/NCAR/ecgtools>`_.
 
 If you are reporting a bug, please include:
 
 * Your operating system name and version.
 * Any details about your local setup that might be helpful in troubleshooting,
-  specifically the Python interpreter version, installed libraries, and ecg
+  specifically the Python interpreter version, installed libraries, and ecgtools
   version.
 * Detailed steps to reproduce the bug.
 
@@ -56,7 +56,7 @@ fix the bug itself.
 Fix bugs
 --------
 
-Look through the `GitHub issues for bugs <https://github.com/NCAR/ecg/labels/type:%20bug>`_.
+Look through the `GitHub issues for bugs <https://github.com/NCAR/ecgtools/labels/type:%20bug>`_.
 
 Talk to developers to find out how you can fix specific bugs.
 
@@ -64,7 +64,7 @@ Talk to developers to find out how you can fix specific bugs.
 Write documentation
 -------------------
 
-ecg could always use more documentation.  What exactly is needed?
+ecgtools could always use more documentation.  What exactly is needed?
 
 * More complementary documentation.  Have you perhaps found something unclear?
 * Docstrings.  There can never be too many of them.
@@ -93,21 +93,21 @@ Preparing Pull Requests
 
 
 #. Fork the
-   `ecg GitHub repository <https://github.com/NCAR/ecg>`__.  It's
-   fine to use ``ecg`` as your fork repository name because it will live
+   `ecgtools GitHub repository <https://github.com/NCAR/ecgtools>`__.  It's
+   fine to use ``ecgtools`` as your fork repository name because it will live
    under your user.
 
 #. Clone your fork locally using `git <https://git-scm.com/>`_ and create a branch::
 
-    $ git clone git@github.com:YOUR_GITHUB_USERNAME/ecg.git
-    $ cd ecg
+    $ git clone git@github.com:YOUR_GITHUB_USERNAME/ecgtools.git
+    $ cd ecgtools
     # now, to fix a bug or add feature create your own branch off "master":
 
     $ git checkout -b your-bugfix-feature-branch-name master
 
 
 
-#. Install `pre-commit <https://pre-commit.com>`_ and its hook on the ecg repo::
+#. Install `pre-commit <https://pre-commit.com>`_ and its hook on the ecgtools repo::
 
      $ pip install --user pre-commit
      $ pre-commit install
@@ -144,8 +144,8 @@ Preparing Pull Requests
 
 #. Finally, submit a pull request through the GitHub website using this data::
 
-    head-fork: YOUR_GITHUB_USERNAME/ecg
+    head-fork: YOUR_GITHUB_USERNAME/ecgtools
     compare: your-branch-name
 
-    base-fork: NCAR/ecg
+    base-fork: NCAR/ecgtools
     base: master
