@@ -34,6 +34,7 @@ setup(
     keywords='ecgtools',
     name='ecgtools',
     packages=find_packages(include=['ecgtools', 'ecgtools.*']),
+    data_files=[('schema', ['schema/generic_schema.yaml'])],
     url='https://github.com/NCAR/ecgtools',
     project_urls={
         'Documentation': 'https://github.com/NCAR/ecgtools',

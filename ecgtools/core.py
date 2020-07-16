@@ -50,8 +50,9 @@ class Builder:
         FileNotFoundError
             When `root_path` does not exist.
         """
-        self.root_path = Path(root_path)
-        if not self.root_path.is_dir():
+        if root_path is not None:
+            self.root_path = Path(root_path)
+        if root_path is not None and not self.root_path.is_dir():
             raise FileNotFoundError(f'{root_path} directory does not exist')
         if parser is not None and not callable(parser):
             raise TypeError('parser must be callable.')
@@ -200,6 +201,7 @@ class Builder:
         cat_id: str = None,
         description: str = None,
         attributes: List[dict] = None,
+        local_attrs: dict = None,
     ) -> 'Builder':
         """
         Harvest attributes for a list of files. This method produces a pandas dataframe
@@ -259,8 +261,15 @@ class Builder:
             'aggregations': aggregations,
         }
 
-        filelist = self.filelist or self._get_filelist_from_dirs()
-        df = parse_files_attributes(filelist, self.parser, self.lazy, self.nbatches)
+        if len(self.filelist) == 0:
+            filelist = self.filelist or self._get_filelist_from_dirs()
+        else:
+            filelist = self.filelist
+
+        if local_attrs is None:
+            local_attrs = {}
+
+        df = parse_files_attributes(filelist, local_attrs, self.parser, self.lazy, self.nbatches)
 
         if attributes is None:
             attributes = []
@@ -272,7 +281,7 @@ class Builder:
         self.df = df
         return self
 
-    def update(self, catalog_file: str, path_column: str) -> 'Builder':
+    def update(self, catalog_file: str, path_column: str, local_attrs: dict = None,) -> 'Builder':
         """
         Update a previously built catalog.
 
@@ -288,12 +297,16 @@ class Builder:
         self.old_df = pd.read_csv(catalog_file)
         filelist_from_prev_cat = self.old_df[path_column].tolist()
         filelist = self._get_filelist_from_dirs()
+
+        if local_attrs is None:
+            local_attrs = {}
+
         # Case 1: The new filelist has files that are not included in the
         # Previously built catalog
         files_to_parse = list(set(filelist) - set(filelist_from_prev_cat))
         if files_to_parse:
             self.new_df = parse_files_attributes(
-                files_to_parse, self.parser, self.lazy, self.nbatches
+                files_to_parse, local_attrs, self.parser, self.lazy, self.nbatches
             )
         else:
             self.new_df = pd.DataFrame()
@@ -342,7 +355,11 @@ class Builder:
 
 
 def parse_files_attributes(
-    filepaths: list, parser: callable = None, lazy: bool = True, nbatches: int = 25,
+    filepaths: list,
+    local_attrs: dict,
+    parser: callable = None,
+    lazy: bool = True,
+    nbatches: int = 25,
 ) -> pd.DataFrame:
     """
     Harvest attributes for a list of files.
@@ -376,7 +393,7 @@ def parse_files_attributes(
             result_batch = dask.delayed(batch)(filepaths[i : i + nbatches])
             results.append(result_batch)
     else:
-        results = [_parse_file_attributes(filepath, parser) for filepath in filepaths]
+        results = [_parse_file_attributes(filepath, local_attrs, parser) for filepath in filepaths]
 
     if dask.is_dask_collection(results[0]):
         results = dask.compute(*results)
@@ -384,7 +401,7 @@ def parse_files_attributes(
     return pd.DataFrame(results)
 
 
-def _parse_file_attributes(filepath: str, parser: callable = None):
+def _parse_file_attributes(filepath: str, local_attrs: dict, parser: callable = None):
     """
     Single file attributes harvesting
 
@@ -404,7 +421,10 @@ def _parse_file_attributes(filepath: str, parser: callable = None):
 
     results = {'path': filepath}
     if parser is not None:
-        x = parser(filepath)
+        if not bool(local_attrs):
+            x = parser(filepath)
+        else:
+            x = parser(filepath, local_attrs)
         # Merge x and results dictionaries
         results = {**x, **results}
     return results
