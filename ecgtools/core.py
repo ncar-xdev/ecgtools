@@ -116,8 +116,8 @@ class Builder:
         list
           A list of files
         """
-        import subprocess
         import fnmatch
+        import subprocess
 
         extension = extension or self.extension
         exclude_patterns = exclude_patterns or self.exclude_patterns
