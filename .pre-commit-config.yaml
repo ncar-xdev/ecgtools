@@ -34,3 +34,10 @@ repos:
       rev: f5bdb72a400f1a56fe88109936c83aa12cc349fa
       hooks:
        - id: prenotebook
+         args:
+                [
+                "--keep-output",
+                "--keep-metadata",
+                "--keep-execution-count",
+                "--keep-empty",
+                ]
