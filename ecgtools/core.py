@@ -393,7 +393,7 @@ def parse_files_attributes(
             result_batch = dask.delayed(batch)(filepaths[i : i + nbatches])
             results.append(result_batch)
     else:
-        results = [_parse_file_attributes(filepath, local_attrs, parser) for filepath in filepaths]
+        results = [_parse_file_attributes(filepath, parser, local_attrs) for filepath in filepaths]
 
     if dask.is_dask_collection(results[0]):
         results = dask.compute(*results)
@@ -401,7 +401,7 @@ def parse_files_attributes(
     return pd.DataFrame(results)
 
 
-def _parse_file_attributes(filepath: str, local_attrs: dict, parser: callable = None):
+def _parse_file_attributes(filepath: str, parser: callable = None, local_attrs: dict = {}):
     """
     Single file attributes harvesting
 
@@ -421,7 +421,7 @@ def _parse_file_attributes(filepath: str, local_attrs: dict, parser: callable = 
 
     results = {'path': filepath}
     if parser is not None:
-        if not bool(local_attrs):
+        if len(local_attrs.keys()) == 0:
             x = parser(filepath)
         else:
             x = parser(filepath, local_attrs)
