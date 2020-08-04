@@ -153,30 +153,26 @@ class YAMLParser:
 
         # verify the format is correct
         if self.validater == 'yamale':
-            try:
-                import yamale
 
-                print('Validating yaml file with yamale.')
-                cwd = Path(os.path.dirname(__file__))
-                schema_path = str(cwd.parent / 'schema') + '/generic_schema.yaml'
-                schema = yamale.make_schema(schema_path)
-                data = yamale.make_data(self.yaml_path)
-                try:
-                    yamale.validate(schema, data, strict=False)
-                    print('Validation success! 👍')
-                    return True
-                except ValueError as e:
-                    print(
-                        'Yamale found that your file, '
-                        + self.yaml_path
-                        + ' is not formatted correctly.'
-                    )
-                    print(e)
-                    return False
-            except ImportError:
-                print('Did not validate yaml because yamale not found.')
-                print('If unexpected results occur, try installing yamale and rerun.')
+            import yamale
+
+            print('Validating yaml file with yamale.')
+            cwd = Path(os.path.dirname(__file__))
+            schema_path = str(cwd.parent / 'schema') + '/generic_schema.yaml'
+            schema = yamale.make_schema(schema_path)
+            data = yamale.make_data(self.yaml_path)
+            try:
+                yamale.validate(schema, data, strict=False)
+                print('Validation success! 👍')
                 return True
+            except ValueError as e:
+                print(
+                    'Yamale found that your file, '
+                    + self.yaml_path
+                    + ' is not formatted correctly.'
+                )
+                print(e)
+                return False
         else:
             print('Did not validate yaml.')
             print('If unexpected results occur, try installing yamale and rerun.')
