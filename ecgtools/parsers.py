@@ -162,7 +162,7 @@ class YAML_Parser:
                 schema = yamale.make_schema(schema_path)
                 data = yamale.make_data(self.yaml_path)
                 try:
-                    yamale.validate(schema, data)
+                    yamale.validate(schema, data, strict=False)
                     print('Validation success! 👍')
                     return True
                 except ValueError as e:
