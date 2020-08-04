@@ -201,7 +201,7 @@ class Builder:
         cat_id: str = None,
         description: str = None,
         attributes: List[dict] = None,
-        local_attrs: dict = None,
+        local_attrs: dict = {},
     ) -> 'Builder':
         """
         Harvest attributes for a list of files. This method produces a pandas dataframe
@@ -261,13 +261,7 @@ class Builder:
             'aggregations': aggregations,
         }
 
-        if len(self.filelist) == 0:
-            filelist = self.filelist or self._get_filelist_from_dirs()
-        else:
-            filelist = self.filelist
-
-        if local_attrs is None:
-            local_attrs = {}
+        filelist = self.filelist or self._get_filelist_from_dirs()
 
         df = parse_files_attributes(filelist, local_attrs, self.parser, self.lazy, self.nbatches)
 
@@ -281,7 +275,7 @@ class Builder:
         self.df = df
         return self
 
-    def update(self, catalog_file: str, path_column: str, local_attrs: dict = None,) -> 'Builder':
+    def update(self, catalog_file: str, path_column: str, local_attrs: dict = {},) -> 'Builder':
         """
         Update a previously built catalog.
 
@@ -297,9 +291,6 @@ class Builder:
         self.old_df = pd.read_csv(catalog_file)
         filelist_from_prev_cat = self.old_df[path_column].tolist()
         filelist = self._get_filelist_from_dirs()
-
-        if local_attrs is None:
-            local_attrs = {}
 
         # Case 1: The new filelist has files that are not included in the
         # Previously built catalog
@@ -421,11 +412,7 @@ def _parse_file_attributes(filepath: str, parser: callable = None, local_attrs: 
 
     results = {'path': filepath}
     if parser is not None:
-        if len(local_attrs.keys()) == 0:
-            x = parser(filepath)
-        else:
-            x = parser(filepath, local_attrs)
-        # Merge x and results dictionaries
+        x = parser(filepath)
         results = {**x, **results}
     return results
 

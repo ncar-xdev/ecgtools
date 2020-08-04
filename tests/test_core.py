@@ -129,10 +129,9 @@ def test_builder_update(root_path, parser, num_items, dummy_assets):
 @pytest.mark.parametrize(
     'yaml_path, csv_path, validater, expected_df_shape',
     [
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', (59, 12)),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', (59, 12)),
-        (str(yaml_root_path) + '/ensemble.yaml', None, 'yamale', (114, 10)),
-        (str(yaml_root_path) + '/ensemble.yaml', None, 'internal', (114, 10)),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', (177, 13)),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'foo', (177, 13)),
+        (str(yaml_root_path) + '/ensemble.yaml', None, 'yamale', (6612, 11)),
     ],
 )
 def test_yaml_parser(yaml_path, csv_path, validater, expected_df_shape):
@@ -142,7 +141,6 @@ def test_yaml_parser(yaml_path, csv_path, validater, expected_df_shape):
     assert p.valid_yaml
     assert b.df.shape == expected_df_shape
     assert isinstance(b.df, pd.DataFrame)
-    assert len(b.filelist) == len(b.df)
 
 
 yinput1 = []
@@ -317,16 +315,6 @@ yinput10 = {'catalog': {}}
 @pytest.mark.parametrize(
     'yaml_path, csv_path, validater, data',
     [
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput1),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput2),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput3),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput4),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput5),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput6),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput7),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput8),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput9),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'internal', yinput10),
         (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput1),
         (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput2),
         (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput3),

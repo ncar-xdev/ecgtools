@@ -1,3 +1,4 @@
+import functools
 import glob
 import os
 import re
@@ -33,7 +34,7 @@ def extract_attr_with_regex(
 
 def cmip6_default_parser(
     filepath: str,
-    global_attrs: list,
+    global_attrs: list = None,
     variable_attrs: list = None,
     attrs_mapping: dict = None,
     add_dim: bool = True,
@@ -62,6 +63,7 @@ def cmip6_default_parser(
     dict
         A dictionary of attributes harvested from the input CMIP6 netCDF file.
     """
+
     try:
         results = {'path': filepath}
         ds = xr.open_dataset(filepath, decode_times=True, use_cftime=True, chunks={})
@@ -127,76 +129,13 @@ class YAML_Parser:
 
         self.yaml_path = yaml_path
         self.csv_path = csv_path
-        self.builder = Builder(None, parser=self._parser_netcdf, lazy=False)
+        self.builder = None
         self.validater = validater
 
         # Read in the yaml file and validate
         with open(self.yaml_path, 'r') as f:
             self.input_yaml = yaml.safe_load(f)
         self.valid_yaml = self._validate_yaml()
-
-    def _internal_validation(self):
-        """
-        Validates the generic yaml input against the schema if the user does not have yamale in
-        their environment.
-
-        Parameters
-        ----------
-        None
-
-        Returns
-        -------
-        boolean
-            True - passes the validation, False - fails the validation
-        """
-
-        # verify that we're working with a dictionary
-        if not isinstance(self.input_yaml, dict):
-            print(
-                'ERROR: The experiment/dataset top level is not a dictionary. Make sure you follow the correct format.'
-            )
-            return False
-        # verify that the first line is 'catalog:' and it only appears once in the yaml file
-        if len(self.input_yaml.keys()) != 1 or 'catalog' not in self.input_yaml.keys():
-            print(
-                "ERROR: The first line in the yaml file must be 'catalog:' and it should only appear once."
-            )
-            return False
-        if not isinstance(self.input_yaml['catalog'], list):
-            print(
-                'ERROR: The catalog entries are not in a list.  make sure you follow the corrrect format.'
-            )
-            return False
-        for dataset in self.input_yaml['catalog']:
-            # check to see if there is a data_sources key for each dataset
-            if 'data_sources' not in dataset.keys():
-                print("ERROR: Each experiment/dataset must have the key 'data_sources'.")
-                return False
-            # verify that we're working with a list at this level
-            if not isinstance(dataset['data_sources'], list):
-                print(
-                    'ERROR: The data_source entries are not in a list.  Make sure you follow the correct format.'
-                )
-                return False
-            for stream_info in dataset['data_sources']:
-                # check to make sure that there's a 'glob_string' key for each data_source
-                if 'glob_string' not in stream_info.keys():
-                    print("ERROR: Each data_source must contain a 'glob_string' key.")
-                    return False
-            # ensemble is an option, but we still need to verify that it meets the rules if it is added
-            if 'ensemble' in dataset.keys():
-                # verify that we're working with a list at this level
-                if not isinstance(dataset['ensemble'], list):
-                    print(
-                        'ERROR: The ensemble entries are not in a list.  Make sure you follow the correct format.'
-                    )
-                    return False
-                for stream_info in dataset['ensemble']:
-                    # check to make sure that there's a 'glob_string' key for each ensemble entry
-                    if 'glob_string' not in stream_info.keys():
-                        print("ERROR: Each ensemble must contain a 'glob_string' key.")
-                        return False
-        return True
 
     def _validate_yaml(self):
         """
@@ -235,11 +174,13 @@ class YAML_Parser:
                     print(e)
                     return False
             except ImportError:
-                print('Validating yaml file internally.')
-                return self._internal_validation()
+                print('Did not validate yaml because yamale not found.')
+                print('If unexpected results occur, try installing yamale and rerun.')
+                return True
         else:
-            print('Validating yaml file internally.')
-            return self._internal_validation()
+            print('Did not validate yaml.')
+            print('If unexpected results occur, try installing yamale and rerun.')
+            return True
 
     def _parser_netcdf(self, filepath, local_attrs):
         """
@@ -260,51 +201,58 @@ class YAML_Parser:
         """
 
         fileparts = {}
-        fileparts['path'] = filepath
 
         try:
             fileparts['variable'] = []
+            fileparts['start_time'] = []
+            fileparts['end_time'] = []
+            fileparts['path'] = []
+
             # open file
             d = nc.Dataset(filepath, 'r')
+
             # find what the time (unlimited) dimension is
             dims = list(dict(d.dimensions).keys())
-            if 'time' in d.variables.keys():
-                times = d['time']
-                start = str(times[0])
-                end = str(times[-1])
-                fileparts['time_range'] = start + '-' + end
+
             # loop through all variables
-            for v in d.variables.keys():
+            for v in d.variables:
                 # add all variables that are not coordinates to the catalog
                 if v not in dims:
                     fileparts['variable'].append(v)
+                    fileparts['path'].append(filepath)
 
-            # add the keys that are common just to the particular glob string
-            # fileparts.update(local_attrs[filepath])
-            for lv in local_attrs[filepath].keys():
-                if '<<' in local_attrs[filepath][lv]:
-                    for v in fileparts['variable']:
-                        if lv not in fileparts.keys():
-                            fileparts[lv] = []
-                        if hasattr(d.variables[v], lv):
-                            fileparts[lv].append(getattr(d.variables[v], lv))
+                    if 'time' in d.variables.keys():
+                        times = d['time']
+                        fileparts['start_time'].append(times[0])
+                        fileparts['end_time'].append(times[-1])
+
+                    # add the keys that are common just to the particular glob string
+                    # fileparts.update(local_attrs[filepath])
+                    for lv in local_attrs[filepath].keys():
+                        if '<<' in local_attrs[filepath][lv]:
+                            if lv not in fileparts.keys():
+                                fileparts[lv] = []
+                            if hasattr(d.variables[v], lv):
+                                fileparts[lv].append(getattr(d.variables[v], lv))
+                            else:
+                                fileparts[lv].append('NaN')
+                        elif '<' in local_attrs[filepath][lv]:
+                            k = local_attrs[filepath][lv].replace('<', '').replace('>', '')
+                            if hasattr(d, k):
+                                fileparts[lv] = getattr(d, k)
+                            else:
+                                fileparts[lv] = 'NaN'
                         else:
-                            fileparts[lv].append('None')
-                elif '<' in local_attrs[filepath][lv]:
-                    k = local_attrs[filepath][lv].replace('<', '').replace('>', '')
-                    if hasattr(d, k):
-                        fileparts[lv] = getattr(d, k)
-                    else:
-                        fileparts[lv] = 'None'
-                else:
-                    fileparts[lv] = local_attrs[filepath][lv]
+                            if lv not in fileparts.keys():
+                                fileparts[lv] = []
+                            fileparts[lv].append(local_attrs[filepath][lv])
             # close netcdf file
             d.close()
         except Exception:
             pass
         return fileparts
 
-    def parser(self) -> 'YAML_Parser':
+    def parser(self) -> 'Builder':
         """
         Method used to start the parsing process.
 
@@ -331,21 +279,31 @@ class YAML_Parser:
             if 'ensemble' in dataset.keys():
                 for member in dataset['ensemble']:
                     glob_string = member.pop('glob_string')
-                    self.builder.filelist = glob.glob(glob_string)
-                    for f in self.builder.filelist:
+                    filelist = glob.glob(glob_string)
+                    for f in filelist:
                         entries[f].update(member)
             # loop over all of the data_sources for the dataset, create a dataframe
             # for each data_source, append that dataframe to a list that will contain
             # the full dataframe (or catalog) based on everything in the yaml file.
             for stream_info in dataset['data_sources']:
-                self.builder.filelist = glob.glob(stream_info['glob_string'])
+                filelist = glob.glob(stream_info['glob_string'])
                 stream_info.pop('glob_string')
-                for f in self.builder.filelist:
+                for f in filelist:
                     entries[f].update(stream_info)
-                df_parts.append(self.builder.build('path', 'variable', local_attrs=entries).df)
-                # create the combined dataframe from all of the data_sources and datasets from
-                # the yaml file
-                df = pd.concat(df_parts, sort=False)
+
+            partial_parser_netcdf = functools.partial(self._parser_netcdf, local_attrs=entries)
+            self.builder = Builder(None, parser=partial_parser_netcdf, lazy=False)
+            self.builder.filelist = [x for x in entries.keys() if x != 'global']
+            df_parts.append(
+                self.builder.build('path', 'variable')
+                .df.set_index('path')
+                .apply(lambda x: x.apply(pd.Series).stack())
+                .reset_index()
+                .drop('level_1', 1)
+            )
+            # create the combined dataframe from all of the data_sources and datasets from
+            # the yaml file
+            df = pd.concat(df_parts, sort=False)
 
         self.builder.df = df.sort_values(by=['path'])
         return self.builder
