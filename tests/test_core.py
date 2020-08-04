@@ -9,7 +9,7 @@ import pytest
 import yaml
 
 from ecgtools import Builder
-from ecgtools.parsers import YAML_Parser, cmip6_default_parser
+from ecgtools.parsers import YAMLParser, cmip6_default_parser
 
 here = Path(os.path.dirname(__file__))
 cmip6_root_path = here.parent / 'sample_data' / 'cmip' / 'CMIP6'
@@ -135,7 +135,7 @@ def test_builder_update(root_path, parser, num_items, dummy_assets):
     ],
 )
 def test_yaml_parser(yaml_path, csv_path, validater, expected_df_shape):
-    p = YAML_Parser(yaml_path, csv_path=csv_path, validater=validater)
+    p = YAMLParser(yaml_path, csv_path=csv_path, validater=validater)
     b = p.parser()
 
     assert p.valid_yaml
@@ -334,5 +334,5 @@ def test_yaml_validation(yaml_path, csv_path, validater, data):
         with open(temp_yaml_file, 'w') as f:
             yaml.dump(data, f)
 
-        p = YAML_Parser(temp_yaml_file, csv_path=csv_path, validater=validater)
+        p = YAMLParser(temp_yaml_file, csv_path=csv_path, validater=validater)
         assert bool(p.valid_yaml) is False

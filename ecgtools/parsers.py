@@ -104,14 +104,14 @@ def cmip6_default_parser(
         return {}
 
 
-class YAML_Parser:
+class YAMLParser:
     """
     Creates a parser that parses a yaml file in order to create a catalog file
     """
 
     def __init__(
         self, yaml_path: str, csv_path: str = None, validater: str = 'yamale',
-    ) -> 'YAML_Parser':
+    ) -> 'YAMLParser':
         """
         Get a list of files from a list of directories.
 
