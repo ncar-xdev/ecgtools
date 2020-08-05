@@ -129,9 +129,9 @@ def test_builder_update(root_path, parser, num_items, dummy_assets):
 @pytest.mark.parametrize(
     'yaml_path, csv_path, validater, expected_df_shape',
     [
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', (177, 13)),
-        (str(yaml_root_path) + '/cmip6.yaml', None, 'foo', (177, 13)),
-        (str(yaml_root_path) + '/ensemble.yaml', None, 'yamale', (6612, 11)),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', (177, 14)),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'foo', (177, 14)),
+        (str(yaml_root_path) + '/ensemble.yaml', None, 'yamale', (6612, 13)),
     ],
 )
 def test_yaml_parser(yaml_path, csv_path, validater, expected_df_shape):

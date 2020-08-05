@@ -222,6 +222,12 @@ class YAMLParser:
                         fileparts['start_time'].append(times[0])
                         fileparts['end_time'].append(times[-1])
 
+                    # add global attributes
+                    for g in local_attrs['global'].keys():
+                        if g not in fileparts.keys():
+                            fileparts[g] = []
+                        fileparts[g].append(local_attrs['global'][g])
+
                     # add the keys that are common just to the particular glob string
                     # fileparts.update(local_attrs[filepath])
                     for lv in local_attrs[filepath].keys():
@@ -268,9 +274,10 @@ class YAMLParser:
         # for dataset in input_yaml.keys():
         for dataset in self.input_yaml['catalog']:
             # get a list of keys that are common to all files in the dataset
+            entries['global'] = {}
             for g in dataset.keys():
                 if 'data_sources' not in g and 'ensemble' not in g:
-                    entries['global'] = dataset[g]
+                    entries['global'][g] = dataset[g]
             # loop over ensemble members, if they exist
             if 'ensemble' in dataset.keys():
                 for member in dataset['ensemble']:
