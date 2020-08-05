@@ -201,7 +201,6 @@ class Builder:
         cat_id: str = None,
         description: str = None,
         attributes: List[dict] = None,
-        local_attrs: dict = {},
     ) -> 'Builder':
         """
         Harvest attributes for a list of files. This method produces a pandas dataframe
@@ -263,7 +262,7 @@ class Builder:
 
         filelist = self.filelist or self._get_filelist_from_dirs()
 
-        df = parse_files_attributes(filelist, local_attrs, self.parser, self.lazy, self.nbatches)
+        df = parse_files_attributes(filelist, self.parser, self.lazy, self.nbatches)
 
         if attributes is None:
             attributes = []
@@ -275,7 +274,7 @@ class Builder:
         self.df = df
         return self
 
-    def update(self, catalog_file: str, path_column: str, local_attrs: dict = {},) -> 'Builder':
+    def update(self, catalog_file: str, path_column: str,) -> 'Builder':
         """
         Update a previously built catalog.
 
@@ -297,7 +296,7 @@ class Builder:
         files_to_parse = list(set(filelist) - set(filelist_from_prev_cat))
         if files_to_parse:
             self.new_df = parse_files_attributes(
-                files_to_parse, local_attrs, self.parser, self.lazy, self.nbatches
+                files_to_parse, self.parser, self.lazy, self.nbatches
             )
         else:
             self.new_df = pd.DataFrame()
@@ -346,11 +345,7 @@ class Builder:
 
 
 def parse_files_attributes(
-    filepaths: list,
-    local_attrs: dict,
-    parser: callable = None,
-    lazy: bool = True,
-    nbatches: int = 25,
+    filepaths: list, parser: callable = None, lazy: bool = True, nbatches: int = 25,
 ) -> pd.DataFrame:
     """
     Harvest attributes for a list of files.
@@ -384,7 +379,7 @@ def parse_files_attributes(
             result_batch = dask.delayed(batch)(filepaths[i : i + nbatches])
             results.append(result_batch)
     else:
-        results = [_parse_file_attributes(filepath, parser, local_attrs) for filepath in filepaths]
+        results = [_parse_file_attributes(filepath, parser) for filepath in filepaths]
 
     if dask.is_dask_collection(results[0]):
         results = dask.compute(*results)
@@ -392,7 +387,7 @@ def parse_files_attributes(
     return pd.DataFrame(results)
 
 
-def _parse_file_attributes(filepath: str, parser: callable = None, local_attrs: dict = {}):
+def _parse_file_attributes(filepath: str, parser: callable = None):
     """
     Single file attributes harvesting
 

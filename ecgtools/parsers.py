@@ -231,9 +231,9 @@ class YAMLParser:
                     # add the keys that are common just to the particular glob string
                     # fileparts.update(local_attrs[filepath])
                     for lv in local_attrs[filepath].keys():
+                        if lv not in fileparts.keys():
+                            fileparts[lv] = []
                         if '<<' in local_attrs[filepath][lv]:
-                            if lv not in fileparts.keys():
-                                fileparts[lv] = []
                             if hasattr(d.variables[v], lv):
                                 fileparts[lv].append(getattr(d.variables[v], lv))
                             else:
@@ -241,12 +241,10 @@ class YAMLParser:
                         elif '<' in local_attrs[filepath][lv]:
                             k = local_attrs[filepath][lv].replace('<', '').replace('>', '')
                             if hasattr(d, k):
-                                fileparts[lv] = getattr(d, k)
+                                fileparts[lv].append(getattr(d, k))
                             else:
-                                fileparts[lv] = 'NaN'
+                                fileparts[lv].append('NaN')
                         else:
-                            if lv not in fileparts.keys():
-                                fileparts[lv] = []
                             fileparts[lv].append(local_attrs[filepath][lv])
             # close netcdf file
             d.close()
