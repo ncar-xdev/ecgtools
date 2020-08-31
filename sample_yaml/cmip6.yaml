@@ -1,0 +1,13 @@
+catalog:
+- experiment: CMIP6
+  data_sources:
+  - glob_string: sample_data/cmip/CMIP6/*/*/*/*/*/*/*/*/*/*/*.nc
+    experiment_id: <experiment_id>
+    frequency: <frequency>
+    parent_experiment_id: <parent_experiment_id>
+    parent_variant_label: <parent_variant_label>
+    table_id: <table_id>
+    variant_label: <variant_label>
+    long_name: <<long_name>>
+    units: <<units>>
+    standard_name: <<standard_name>>

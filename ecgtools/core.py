@@ -50,8 +50,9 @@ class Builder:
         FileNotFoundError
             When `root_path` does not exist.
         """
-        self.root_path = Path(root_path)
-        if not self.root_path.is_dir():
+        if root_path is not None:
+            self.root_path = Path(root_path)
+        if root_path is not None and not self.root_path.is_dir():
             raise FileNotFoundError(f'{root_path} directory does not exist')
         if parser is not None and not callable(parser):
             raise TypeError('parser must be callable.')
@@ -260,6 +261,7 @@ class Builder:
         }
 
         filelist = self.filelist or self._get_filelist_from_dirs()
+
         df = parse_files_attributes(filelist, self.parser, self.lazy, self.nbatches)
 
         if attributes is None:
@@ -272,7 +274,7 @@ class Builder:
         self.df = df
         return self
 
-    def update(self, catalog_file: str, path_column: str) -> 'Builder':
+    def update(self, catalog_file: str, path_column: str,) -> 'Builder':
         """
         Update a previously built catalog.
 
@@ -288,6 +290,7 @@ class Builder:
         self.old_df = pd.read_csv(catalog_file)
         filelist_from_prev_cat = self.old_df[path_column].tolist()
         filelist = self._get_filelist_from_dirs()
+
         # Case 1: The new filelist has files that are not included in the
         # Previously built catalog
         files_to_parse = list(set(filelist) - set(filelist_from_prev_cat))
@@ -405,7 +408,6 @@ def _parse_file_attributes(filepath: str, parser: callable = None):
     results = {'path': filepath}
     if parser is not None:
         x = parser(filepath)
-        # Merge x and results dictionaries
         results = {**x, **results}
     return results
 

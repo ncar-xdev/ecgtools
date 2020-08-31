@@ -1,3 +1,5 @@
+netCDF4
 xarray
+yamale
 dask[delayed]
 dask[bag]

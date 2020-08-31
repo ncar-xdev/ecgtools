@@ -6,12 +6,14 @@ from tempfile import TemporaryDirectory
 import intake
 import pandas as pd
 import pytest
+import yaml
 
 from ecgtools import Builder
-from ecgtools.parsers import cmip6_default_parser
+from ecgtools.parsers import YAMLParser, cmip6_default_parser
 
 here = Path(os.path.dirname(__file__))
 cmip6_root_path = here.parent / 'sample_data' / 'cmip' / 'CMIP6'
+yaml_root_path = here.parent / 'sample_yaml'
 
 cmip6_global_attrs = [
     'activity_id',
@@ -122,3 +124,215 @@ def test_builder_update(root_path, parser, num_items, dummy_assets):
         builder = builder.update(catalog_file, path_column='path')
         assert builder.old_df.size == num_items + len(dummy_assets)
         assert (builder.df.size - builder.old_df.size) == builder.new_df.size - len(dummy_assets)
+
+
+@pytest.mark.parametrize(
+    'yaml_path, csv_path, validater, expected_df_shape',
+    [
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', (177, 14)),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'foo', (177, 14)),
+        (str(yaml_root_path) + '/ensemble.yaml', None, 'yamale', (6612, 13)),
+    ],
+)
+def test_yaml_parser(yaml_path, csv_path, validater, expected_df_shape):
+    p = YAMLParser(yaml_path, csv_path=csv_path, validater=validater)
+    b = p.parser()
+
+    assert p.valid_yaml
+    assert b.df.shape == expected_df_shape
+    assert isinstance(b.df, pd.DataFrame)
+
+
+yinput1 = []
+yinput2 = {'foo': []}
+yinput3 = {
+    'catalog': [
+        {
+            'ctrl_experiment': 'piControl',
+            'ensemble': [
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.001',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.001*.nc',
+                    'member_id': '001',
+                },
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.002',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.002*.nc',
+                    'member_id': '002',
+                },
+            ],
+            'experiment': 'b.e11.BRCP85C5CNBDRD',
+        }
+    ]
+}
+yinput4 = {
+    'catalog': [
+        {'ctrl_experiment': 'piControl', 'data_sources': {}, 'experiment': 'b.e11.BRCP85C5CNBDRD'}
+    ]
+}
+yinput5 = {
+    'catalog': [
+        {
+            'ctrl_experiment': 'piControl',
+            'data_sources': [
+                {
+                    'cell_methods': '<<cell_methods>>',
+                    'glob_foo_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.*pop.h.*',
+                    'long_name': '<<long_name>>',
+                    'model_name': 'pop',
+                    'time_freq': '<time_period_freq>',
+                    'units': '<<units>>',
+                }
+            ],
+            'ensemble': [
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.001',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.001*.nc',
+                    'member_id': '001',
+                },
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.002',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.002*.nc',
+                    'member_id': '002',
+                },
+            ],
+            'experiment': 'b.e11.BRCP85C5CNBDRD',
+        }
+    ]
+}
+yinput6 = {
+    'catalog': [
+        {
+            'ctrl_experiment': 'piControl',
+            'data_sources': [
+                {
+                    'cell_methods': '<<cell_methods>>',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.*pop.h.*',
+                    'long_name': '<<long_name>>',
+                    'model_name': 'pop',
+                    'time_freq': '<time_period_freq>',
+                    'units': '<<units>>',
+                }
+            ],
+            'ensemble': {},
+            'experiment': 'b.e11.BRCP85C5CNBDRD',
+        }
+    ]
+}
+yinput7 = {
+    'catalog': [
+        {
+            'ctrl_experiment': 'piControl',
+            'data_sources': [
+                {
+                    'cell_methods': '<<cell_methods>>',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.*pop.h.*',
+                    'long_name': '<<long_name>>',
+                    'model_name': 'pop',
+                    'time_freq': '<time_period_freq>',
+                    'units': '<<units>>',
+                }
+            ],
+            'ensemble': [
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.001',
+                    'glob_foo_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.001*.nc',
+                    'member_id': '001',
+                },
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.002',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.002*.nc',
+                    'member_id': '002',
+                },
+            ],
+            'experiment': 'b.e11.BRCP85C5CNBDRD',
+        }
+    ]
+}
+yinput8 = {
+    'catalog': [
+        {
+            'ctrl_experiment': 'piControl',
+            'data_sources': [
+                {
+                    'cell_methods': '<<cell_methods>>',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.*pop.h.*',
+                    'long_name': '<<long_name>>',
+                    'model_name': 'pop',
+                    'time_freq': '<time_period_freq>',
+                    'units': '<<units>>',
+                }
+            ],
+            'ensemble': [
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.001',
+                    'glob_foo_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.001*.nc',
+                    'member_id': '001',
+                },
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.002',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.002*.nc',
+                    'member_id': '002',
+                },
+            ],
+            'experiment': 'b.e11.BRCP85C5CNBDRD',
+        }
+    ]
+}
+yinput9 = {
+    'catalog': [
+        {
+            'ctrl_experiment': 'piControl',
+            'data_sources': [
+                {
+                    'cell_methods': '<<cell_methods>>',
+                    'glob_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.*pop.h.*',
+                    'long_name': '<<long_name>>',
+                    'model_name': 'pop',
+                    'time_freq': '<time_period_freq>',
+                    'units': '<<units>>',
+                }
+            ],
+            'ensemble': [
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.001',
+                    'glob_foo_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.001*.nc',
+                    'member_id': '001',
+                },
+                {
+                    'experiment_name': 'b.e11.BRCP85C5CNBDRD.f09_g16.002',
+                    'glob_foo_string': 'sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.002*.nc',
+                    'member_id': '002',
+                },
+            ],
+            'experiment': 'b.e11.BRCP85C5CNBDRD',
+        }
+    ]
+}
+yinput10 = {'catalog': {}}
+
+
+@pytest.mark.parametrize(
+    'yaml_path, csv_path, validater, data',
+    [
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput1),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput2),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput3),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput4),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput5),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput6),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput7),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput8),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput9),
+        (str(yaml_root_path) + '/cmip6.yaml', None, 'yamale', yinput10),
+    ],
+)
+def test_yaml_validation(yaml_path, csv_path, validater, data):
+
+    with TemporaryDirectory() as local_dir:
+        temp_yaml_file = f'{local_dir}/my_yaml.yaml'
+        with open(temp_yaml_file, 'w') as f:
+            yaml.dump(data, f)
+
+        p = YAMLParser(temp_yaml_file, csv_path=csv_path, validater=validater)
+        assert bool(p.valid_yaml) is False
