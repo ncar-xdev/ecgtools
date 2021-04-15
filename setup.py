@@ -7,7 +7,7 @@ from setuptools import find_packages, setup
 with open('requirements.txt') as f:
     requirements = f.read().strip().split('\n')
 
-with open('README.rst') as f:
+with open('README.md') as f:
     long_description = f.read()
 
 setup(
@@ -30,6 +30,7 @@ setup(
     install_requires=requirements,
     license='Apache Software License 2.0',
     long_description=long_description,
+    long_description_content_type='text/markdown',
     include_package_data=True,
     keywords='ecgtools',
     name='ecgtools',
