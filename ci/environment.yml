@@ -1,7 +1,9 @@
-name: sandbox-devel
+name: ecgtools-dev
 channels:
   - conda-forge
+  - nodefaults
 dependencies:
+  - cf_xarray
   - codecov
   - dask
   - intake-esm
@@ -13,3 +15,4 @@ dependencies:
   - pytest-cov
   - xarray
   - yamale
+  - pre-commit
