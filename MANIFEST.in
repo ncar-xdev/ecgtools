@@ -1,6 +1,12 @@
 include LICENSE
-include README.rst
+include README.md
 
 recursive-include ecgtools *.py
 recursive-exclude * __pycache__
 recursive-exclude * *.py[co]
+
+include *.md
+include *.toml
+include *.txt
+prune tests*
+prune ci*
