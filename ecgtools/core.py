@@ -274,7 +274,11 @@ class Builder:
         self.df = df
         return self
 
-    def update(self, catalog_file: str, path_column: str,) -> 'Builder':
+    def update(
+        self,
+        catalog_file: str,
+        path_column: str,
+    ) -> 'Builder':
         """
         Update a previously built catalog.
 
@@ -312,7 +316,11 @@ class Builder:
         self.df = pd.concat([old_df, self.new_df], ignore_index=True)
         return self
 
-    def save(self, catalog_file: str, **kwargs,) -> 'Builder':
+    def save(
+        self,
+        catalog_file: str,
+        **kwargs,
+    ) -> 'Builder':
 
         """
         Create a catalog content to files.
@@ -345,7 +353,10 @@ class Builder:
 
 
 def parse_files_attributes(
-    filepaths: list, parser: callable = None, lazy: bool = True, nbatches: int = 25,
+    filepaths: list,
+    parser: callable = None,
+    lazy: bool = True,
+    nbatches: int = 25,
 ) -> pd.DataFrame:
     """
     Harvest attributes for a list of files.

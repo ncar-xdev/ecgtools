@@ -110,7 +110,10 @@ class YAMLParser:
     """
 
     def __init__(
-        self, yaml_path: str, csv_path: str = None, validater: str = 'yamale',
+        self,
+        yaml_path: str,
+        csv_path: str = None,
+        validater: str = 'yamale',
     ) -> 'YAMLParser':
         """
         Get a list of files from a list of directories.
