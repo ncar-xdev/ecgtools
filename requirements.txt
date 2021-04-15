@@ -3,3 +3,4 @@ xarray
 yamale
 dask[delayed]
 dask[bag]
+cf_xarray

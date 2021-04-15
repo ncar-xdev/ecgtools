@@ -1,17 +1,17 @@
 catalog:
-- experiment: b.e11.BRCP85C5CNBDRD
-  ctrl_experiment: piControl
-  ensemble:
-  - glob_string: sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.001*.nc
-    experiment_name: b.e11.BRCP85C5CNBDRD.f09_g16.001
-    member_id: '001'
-  - glob_string: sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.002*.nc
-    experiment_name: b.e11.BRCP85C5CNBDRD.f09_g16.002
-    member_id: '002'
-  data_sources:
-  - glob_string: sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.*pop.h.*
-    model_name: pop
-    time_freq: <time_period_freq>
-    long_name: <<long_name>>
-    units: <<units>>
-    cell_methods: <<cell_methods>>
+  - experiment: b.e11.BRCP85C5CNBDRD
+    ctrl_experiment: piControl
+    ensemble:
+      - glob_string: sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.001*.nc
+        experiment_name: b.e11.BRCP85C5CNBDRD.f09_g16.001
+        member_id: '001'
+      - glob_string: sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.002*.nc
+        experiment_name: b.e11.BRCP85C5CNBDRD.f09_g16.002
+        member_id: '002'
+    data_sources:
+      - glob_string: sample_data/cesm-le/b.e11.BRCP85C5CNBDRD.f09_g16.*pop.h.*
+        model_name: pop
+        time_freq: <time_period_freq>
+        long_name: <<long_name>>
+        units: <<units>>
+        cell_methods: <<cell_methods>>
