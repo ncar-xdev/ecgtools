@@ -13,7 +13,7 @@ from .cesm import symle_parser
 
 app = typer.Typer(help='ESM Catalog Generation CLI')
 
-parsers = {'cesm2_symle': symle_parser}
+parsers = {'cesm2-symle': symle_parser}
 
 
 class Collection(Enum):
@@ -57,7 +57,9 @@ def build(
     ),
 ):
 
-    cluster = NCARCluster(cores=8, processes=8, memory='80GB')
+    cluster = NCARCluster(
+        cores=8, processes=8, memory='80GB', resource_spec='select=1:ncpus=8:mem=80GB'
+    )
     cluster.scale(jobs=jobs)
     client = Client(cluster)
 
