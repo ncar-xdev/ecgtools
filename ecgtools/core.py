@@ -442,6 +442,7 @@ class Builder:
 
         """
 
+        catalog_file = str(catalog_file)
         self.esmcol_data['catalog_file'] = catalog_file
         json_path = f'{catalog_file.split(".")[0]}.json'
         with open(json_path, mode='w') as outfile:

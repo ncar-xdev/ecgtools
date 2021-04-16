@@ -6,7 +6,8 @@ import xarray as xr
 from ..core import extract_attr_with_regex
 
 
-def symle_parser(file):
+def smyle_parser(file):
+    """Parser for CESM2 Seasonal-to-Multiyear Large Ensemble (SMYLE)"""
     try:
         ds = xr.open_dataset(file, chunks={})
         file = pathlib.Path(file)

@@ -9,15 +9,15 @@ from rich.console import Console
 
 console = Console()
 from ..core import Builder
-from .cesm import symle_parser
+from .cesm import smyle_parser
 
 app = typer.Typer(help='ESM Catalog Generation CLI')
 
-parsers = {'cesm2-symle': symle_parser}
+parsers = {'cesm2-smyle': smyle_parser}
 
 
 class Collection(Enum):
-    cesm2_symle = 'cesm2-symle'
+    cesm2_smyle = 'cesm2-smyle'
 
 
 class DataFormat(Enum):
@@ -50,8 +50,11 @@ def build(
     variable_column: str = typer.Option(
         'variable', help='Name of the attribute column in catalog that contains the variable name'
     ),
-    data_format: DataFormat = typer.Option('netcdf', help='The data format. '),
+    data_format: DataFormat = typer.Option('netcdf', help='Data format'),
     catalog_name: str = typer.Option(None, help='Catalog Name'),
+    description: str = typer.Option(
+        '', help='Detailed description to fully explain the collection'
+    ),
     output_path: pathlib.Path = typer.Option(
         '.', help='Output directory path', exists=True, dir_okay=True
     ),
@@ -79,7 +82,10 @@ def build(
                 nbatches=nbatches,
             )
             .build(
-                path_column=path_column, variable_column=variable_column, data_format=data_format
+                path_column=path_column,
+                variable_column=variable_column,
+                data_format=data_format,
+                description=description,
             )
             .save(catalog_file=catalog_file)
         )
