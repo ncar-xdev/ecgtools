@@ -338,7 +338,9 @@ class Builder:
         esmcol_data['esmcat_version'] = esmcat_version or '0.0.1'
         esmcol_data['id'] = cat_id or ''
         esmcol_data['description'] = description or ''
-        esmcol_data['last_updated'] = datetime.now().utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        esmcol_data['last_updated'] = (
+            datetime.datetime.now().utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        )
         esmcol_data['attributes'] = None
         esmcol_data['assets'] = {'column_name': path_column}
 
