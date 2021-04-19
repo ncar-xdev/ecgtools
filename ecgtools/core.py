@@ -1,3 +1,4 @@
+import dataclasses
 import datetime
 import itertools
 import json
@@ -7,6 +8,9 @@ from pathlib import Path
 from typing import List
 
 import dask
+from rich.console import Console
+
+console = Console()
 import pandas as pd
 
 
@@ -104,53 +108,51 @@ def extract_attr_with_regex(
         return None
 
 
+@dataclasses.dataclass
 class Builder:
     """
     Generates a catalog from a list of files.
+
+    Parameters
+    ----------
+    root_path : str
+        Path of root directory.
+    extension : str, optional
+        File extension, by default None. If None, the builder will look for files with
+        "*.nc" extension.
+    depth : int, optional
+        Recursion depth. Recursively crawl `root_path` up to a specified depth, by default None
+    exclude_patterns : list, optional
+        Directory, file patterns to exclude during catalog generation, by default None
+    parser : callable, optional
+        A function (or callable object) that will be called to parse
+        attributes from a given file/filepath, by default None
+    lazy : bool, optional
+        Whether to parse attributes lazily via dask.delayed, by default True
+    nbatches : int, optional
+        Number of tasks to batch in a single `dask.delayed` call, by default 25
+
+    Raises
+    ------
+    FileNotFoundError
+        When `root_path` does not exist.
     """
 
-    def __init__(
-        self,
-        root_path: str,
-        extension: str = '*.nc',
-        depth: int = 0,
-        exclude_patterns: list = None,
-        parser: callable = None,
-        lazy: bool = True,
-        nbatches: int = 25,
-    ) -> 'Builder':
-        """
-        Generate ESM catalog from a list of files.
+    root_path: str
+    extension: str = '*.nc'
+    depth: int = 0
+    exclude_patterns: list = None
+    parser: callable = None
+    lazy: bool = True
+    nbatches: int = 25
 
-        Parameters
-        ----------
-        root_path : str
-            Path of root directory.
-        extension : str, optional
-            File extension, by default None. If None, the builder will look for files with
-            "*.nc" extension.
-        depth : int, optional
-            Recursion depth. Recursively crawl `root_path` up to a specified depth, by default None
-        exclude_patterns : list, optional
-            Directory, file patterns to exclude during catalog generation, by default None
-        parser : callable, optional
-            A function (or callable object) that will be called to parse
-            attributes from a given file/filepath, by default None
-        lazy : bool, optional
-            Whether to parse attributes lazily via dask.delayed, by default True
-        nbatches : int, optional
-            Number of tasks to batch in a single `dask.delayed` call, by default 25
+    def __post_init__(self):
 
-        Raises
-        ------
-        FileNotFoundError
-            When `root_path` does not exist.
-        """
-        if root_path is not None:
-            self.root_path = Path(root_path)
-        if root_path is not None and not self.root_path.is_dir():
-            raise FileNotFoundError(f'{root_path} directory does not exist')
-        if parser is not None and not callable(parser):
+        if self.root_path is not None:
+            self.root_path = Path(self.root_path)
+        if self.root_path is not None and not self.root_path.is_dir():
+            raise FileNotFoundError(f'{self.root_path} directory does not exist')
+        if self.parser is not None and not callable(self.parser):
             raise TypeError('parser must be callable.')
         self.dirs = []
         self.filelist = []
@@ -158,12 +160,7 @@ class Builder:
         self.old_df = None
         self.new_df = None
         self.esmcol_data = None
-        self.parser = parser
-        self.lazy = lazy
-        self.nbatches = nbatches
-        self.extension = extension
-        self.depth = depth
-        self.exclude_patterns = exclude_patterns or []
+        self.exclude_patterns = self.exclude_patterns or []
 
     def _get_directories(self, root_path: str = None, depth: int = None):
         """
@@ -191,6 +188,7 @@ class Builder:
             depth = self.depth
 
         pattern = '*/' * (depth + 1)
+        console.print('Getting list of directories...')
         dirs = [x for x in root_path.glob(pattern) if x.is_dir()]
         self.dirs = dirs
         return self
@@ -270,11 +268,14 @@ class Builder:
                 dirs = self.dirs.copy()
             else:
                 dirs = self.dirs.copy()
+        console.print('Getting list of files...')
         if self.lazy:
+            console.print('Batching `_get_filelist()` dask.delayed calls...')
             filelist = [
                 self._get_filelist_delayed(directory, extension, exclude_patterns)
                 for directory in dirs
             ]
+
             filelist = dask.compute(*filelist)
         else:
             filelist = [

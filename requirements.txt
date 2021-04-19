@@ -1,8 +1,9 @@
+cf_xarray
+dask[bag]
+dask[delayed]
+ncar-jobqueue
 netCDF4
+rich
+typer
 xarray
 yamale
-dask[delayed]
-dask[bag]
-cf_xarray
-typer
-ncar-jobqueue
