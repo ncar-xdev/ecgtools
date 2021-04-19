@@ -59,6 +59,7 @@ def build(
         '.', help='Output directory path', exists=True, dir_okay=True
     ),
 ):
+    """Generates a catalog from a list of files."""
 
     cluster = NCARCluster(
         cores=8, processes=8, memory='80GB', resource_spec='select=1:ncpus=8:mem=80GB'
@@ -84,7 +85,7 @@ def build(
             .build(
                 path_column=path_column,
                 variable_column=variable_column,
-                data_format=data_format,
+                data_format=data_format.value,
                 description=description,
             )
             .save(catalog_file=catalog_file)
@@ -94,8 +95,49 @@ def build(
 
 
 @app.command()
-def test():
-    ...
+def versions():
+    """print the versions of ecgtools and its dependencies."""
+    import importlib
+    import sys
+
+    file = sys.stdout
+
+    packages = [
+        'xarray',
+        'pandas',
+        'intake',
+        'ncar_jobqueue',
+        'dask_jobqueue',
+        'cf_xarray',
+        'dask',
+        'netCDF4',
+        'zarr',
+        'typer',
+    ]
+    deps = [(mod, lambda mod: mod.__version__) for mod in packages]
+
+    deps_blob = []
+    for (modname, ver_f) in deps:
+        try:
+            if modname in sys.modules:
+                mod = sys.modules[modname]
+            else:
+                mod = importlib.import_module(modname)
+        except Exception:
+            deps_blob.append((modname, None))
+        else:
+            try:
+                ver = ver_f(mod)
+                deps_blob.append((modname, ver))
+            except Exception:
+                deps_blob.append((modname, 'installed'))
+
+    print('\nINSTALLED VERSIONS', file=file)
+    print('------------------', file=file)
+
+    print('', file=file)
+    for k, stat in sorted(deps_blob):
+        print(f'{k}: {stat}', file=file)
 
 
 def main():
