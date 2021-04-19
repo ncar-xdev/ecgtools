@@ -5,10 +5,8 @@ from typing import List
 import typer
 from distributed import Client
 from ncar_jobqueue import NCARCluster
-from rich.console import Console
 
-console = Console()
-from ..core import Builder
+from ..core import Builder, console
 from .cesm import smyle_parser
 
 app = typer.Typer(help='ESM Catalog Generation CLI')
