@@ -1,11 +1,107 @@
+import datetime
 import itertools
 import json
+import re
 from collections import OrderedDict
 from pathlib import Path
 from typing import List
 
 import dask
 import pandas as pd
+
+
+def parse_files_attributes(
+    filepaths: list,
+    parser: callable = None,
+    lazy: bool = True,
+    nbatches: int = 25,
+) -> pd.DataFrame:
+    """
+    Harvest attributes for a list of files.
+
+    Parameters
+    ----------
+    filepaths : list
+        an explicit list of files.
+    parser : callable, optional
+        A function (or callable object) that will be called to parse
+        attributes from a given file/filepath, by default None
+    lazy : bool, optional
+        Whether to parse attributes lazily via dask.delayed, by default True
+    nbatches : int, optional
+        Number of tasks to batch in a single `dask.delayed` call, by default 25
+    """
+
+    def batch(seq):
+        sub_results = []
+        for x in seq:
+            sub_results.append(_parse_file_attributes(x, parser))
+        return sub_results
+
+    if lazy:
+        # Don't Do this: [_parse_file_attributes_delayed(filepath, parser) for filepath in filepaths]
+        # It will produce a very large task graph for large collections. For example, CMIP6 archive would results
+        # in a task graph with ~1.5 million tasks. To reduce the number of tasks,
+        # we will batch multiple tasks into a single task by creating batches of delayed calls.
+        results = []
+        for i in range(0, len(filepaths), nbatches):
+            result_batch = dask.delayed(batch)(filepaths[i : i + nbatches])
+            results.append(result_batch)
+    else:
+        results = [_parse_file_attributes(filepath, parser) for filepath in filepaths]
+
+    if dask.is_dask_collection(results[0]):
+        results = dask.compute(*results)
+        results = list(itertools.chain(*results))
+    return pd.DataFrame(results)
+
+
+def _parse_file_attributes(filepath: str, parser: callable = None):
+    """
+    Single file attributes harvesting
+
+    Parameters
+    ----------
+    filepath : str
+        Path of a file.
+    parser : callable, optional
+        A function (or callable object) that will be called to parse
+        attributes from a given file/filepath, by default None, by default None
+
+    Returns
+    -------
+    df
+        A dataframe of attributes harvested from the input file.
+    """
+
+    results = {'path': filepath}
+    if parser is not None:
+        x = parser(filepath)
+        results = {**x, **results}
+    return results
+
+
+_parse_file_attributes_delayed = dask.delayed(_parse_file_attributes)
+
+
+def extract_attr_with_regex(
+    input_str: str, regex: str, strip_chars: str = None, ignore_case: bool = True
+):
+
+    if ignore_case:
+        pattern = re.compile(regex, re.IGNORECASE)
+    else:
+        pattern = re.compile(regex)
+    match = re.findall(pattern, input_str)
+    if match:
+        match = max(match, key=len)
+        if strip_chars:
+            match = match.strip(strip_chars)
+        else:
+            match = match.strip()
+        return match
+    else:
+        return None
 
 
 class Builder:
@@ -242,15 +338,18 @@ class Builder:
         esmcol_data['esmcat_version'] = esmcat_version or '0.0.1'
         esmcol_data['id'] = cat_id or ''
         esmcol_data['description'] = description or ''
+        esmcol_data['last_updated'] = (
+            datetime.datetime.now().utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')
+        )
         esmcol_data['attributes'] = None
-
         esmcol_data['assets'] = {'column_name': path_column}
+
         if (data_format is not None) and (format_column is not None):
             raise ValueError('data_format and format_column are mutually exclusive')
 
         if data_format is not None:
             esmcol_data['assets']['format'] = data_format
-        else:
+        elif format_column:
             esmcol_data['assets']['format_column_name'] = format_column
         groupby_attrs = groupby_attrs or [path_column]
         aggregations = aggregations or []
@@ -343,6 +442,7 @@ class Builder:
 
         """
 
+        catalog_file = str(catalog_file)
         self.esmcol_data['catalog_file'] = catalog_file
         json_path = f'{catalog_file.split(".")[0]}.json'
         with open(json_path, mode='w') as outfile:
@@ -350,77 +450,3 @@ class Builder:
 
         self.df.to_csv(catalog_file, index=False, **kwargs)
         return self
-
-
-def parse_files_attributes(
-    filepaths: list,
-    parser: callable = None,
-    lazy: bool = True,
-    nbatches: int = 25,
-) -> pd.DataFrame:
-    """
-    Harvest attributes for a list of files.
-
-    Parameters
-    ----------
-    filepaths : list
-        an explicit list of files.
-    parser : callable, optional
-        A function (or callable object) that will be called to parse
-        attributes from a given file/filepath, by default None
-    lazy : bool, optional
-        Whether to parse attributes lazily via dask.delayed, by default True
-    nbatches : int, optional
-        Number of tasks to batch in a single `dask.delayed` call, by default 25
-    """
-
-    def batch(seq):
-        sub_results = []
-        for x in seq:
-            sub_results.append(_parse_file_attributes(x, parser))
-        return sub_results
-
-    if lazy:
-        # Don't Do this: [_parse_file_attributes_delayed(filepath, parser) for filepath in filepaths]
-        # It will produce a very large task graph for large collections. For example, CMIP6 archive would results
-        # in a task graph with ~1.5 million tasks. To reduce the number of tasks,
-        # we will batch multiple tasks into a single task by creating batches of delayed calls.
-        results = []
-        for i in range(0, len(filepaths), nbatches):
-            result_batch = dask.delayed(batch)(filepaths[i : i + nbatches])
-            results.append(result_batch)
-    else:
-        results = [_parse_file_attributes(filepath, parser) for filepath in filepaths]
-
-    if dask.is_dask_collection(results[0]):
-        results = dask.compute(*results)
-        results = list(itertools.chain(*results))
-    return pd.DataFrame(results)
-
-
-def _parse_file_attributes(filepath: str, parser: callable = None):
-    """
-    Single file attributes harvesting
-
-    Parameters
-    ----------
-    filepath : str
-        Path of a file.
-    parser : callable, optional
-        A function (or callable object) that will be called to parse
-        attributes from a given file/filepath, by default None, by default None
-
-    Returns
-    -------
-    df
-        A dataframe of attributes harvested from the input file.
-    """
-
-    results = {'path': filepath}
-    if parser is not None:
-        x = parser(filepath)
-        results = {**x, **results}
-    return results
-
-
-_parse_file_attributes_delayed = dask.delayed(_parse_file_attributes)

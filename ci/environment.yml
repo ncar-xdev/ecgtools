@@ -16,3 +16,6 @@ dependencies:
   - xarray
   - yamale
   - pre-commit
+  - typer
+  - ncar-jobqueue
+  - rich

@@ -4,3 +4,5 @@ yamale
 dask[delayed]
 dask[bag]
 cf_xarray
+typer
+ncar-jobqueue
