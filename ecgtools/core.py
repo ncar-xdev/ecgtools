@@ -37,10 +37,7 @@ def parse_files_attributes(
     """
 
     def batch(seq):
-        sub_results = []
-        for x in seq:
-            sub_results.append(_parse_file_attributes(x, parser))
-        return sub_results
+        return [_parse_file_attributes(x, parser) for x in seq]
 
     if lazy:
         # Don't Do this: [_parse_file_attributes_delayed(filepath, parser) for filepath in filepaths]
@@ -99,10 +96,7 @@ def extract_attr_with_regex(
     match = re.findall(pattern, input_str)
     if match:
         match = max(match, key=len)
-        if strip_chars:
-            match = match.strip(strip_chars)
-        else:
-            match = match.strip()
+        match = match.strip(strip_chars) if strip_chars else match.strip()
         return match
     else:
         return None
@@ -178,12 +172,7 @@ class Builder:
         -------
         `ecgtools.Builder`
         """
-        if root_path is None:
-            root_path = self.root_path
-
-        else:
-            root_path = Path(root_path)
-
+        root_path = self.root_path if root_path is None else Path(root_path)
         if depth is None:
             depth = self.depth
 
@@ -265,9 +254,7 @@ class Builder:
         if dirs is None:
             if not self.dirs:
                 self._get_directories(depth=depth)
-                dirs = self.dirs.copy()
-            else:
-                dirs = self.dirs.copy()
+            dirs = self.dirs.copy()
         console.print('Getting list of files...')
         if self.lazy:
             console.print('Batching `_get_filelist()` dask.delayed calls...')
@@ -365,9 +352,7 @@ class Builder:
         df = parse_files_attributes(filelist, self.parser, self.lazy, self.nbatches)
 
         if attributes is None:
-            attributes = []
-            for column in df.columns:
-                attributes.append({'column_name': column, 'vocabulary': ''})
+            attributes = [{'column_name': column, 'vocabulary': ''} for column in df.columns]
 
         esmcol_data['attributes'] = attributes
         self.esmcol_data = esmcol_data
