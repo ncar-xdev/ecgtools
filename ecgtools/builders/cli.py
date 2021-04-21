@@ -8,14 +8,16 @@ from ncar_jobqueue import NCARCluster
 
 from ..core import Builder, console
 from .cesm import smyle_parser
+from .cmip import cmip6_parser
 
 app = typer.Typer(help='ESM Catalog Generation CLI')
 
-parsers = {'cesm2-smyle': smyle_parser}
+parsers = {'cesm2-smyle': smyle_parser, 'cmip6': cmip6_parser}
 
 
 class Collection(Enum):
     cesm2_smyle = 'cesm2-smyle'
+    cmip6 = 'cmip6'
 
 
 class DataFormat(Enum):
