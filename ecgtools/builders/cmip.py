@@ -40,30 +40,30 @@ def cmip6_parser(file):
         )
     )
     try:
-        ds = xr.open_dataset(file, chunks={}, use_cftime=True)
-        attributes = {key: ds.attrs.get(key) for key in keys}
-        attributes['member_id'] = attributes['variant_label']
+        with xr.open_dataset(file, chunks={}, use_cftime=True) as ds:
+            attributes = {key: ds.attrs.get(key) for key in keys}
+            attributes['member_id'] = attributes['variant_label']
 
-        variable_id = attributes['variable_id']
-        if variable_id:
-            attrs = ds[variable_id].attrs
-            for attr in ['standard_name', 'long_name', 'units']:
-                attributes[attr] = attrs.get(attr)
+            variable_id = attributes['variable_id']
+            if variable_id:
+                attrs = ds[variable_id].attrs
+                for attr in ['standard_name', 'long_name', 'units']:
+                    attributes[attr] = attrs.get(attr)
 
-        # Set the default of # of vertical levels to 1
-        vertical_levels = 1
-        start_time, end_time = None, None
+            # Set the default of # of vertical levels to 1
+            vertical_levels = 1
+            start_time, end_time = None, None
 
-        try:
-            vertical_levels = ds[ds.cf['vertical'].name].size
-            start_time, end_time = str(ds.cf['T'][0].data), str(ds.cf['T'][-1].data)
+            try:
+                vertical_levels = ds[ds.cf['vertical'].name].size
+                start_time, end_time = str(ds.cf['T'][0].data), str(ds.cf['T'][-1].data)
 
-        except (KeyError, AttributeError, ValueError):
-            pass
-        attributes['vertical_levels'] = vertical_levels
-        attributes['start_time'] = start_time
-        attributes['end_time'] = end_time
-        attributes['path'] = file
+            except (KeyError, AttributeError, ValueError):
+                pass
+            attributes['vertical_levels'] = vertical_levels
+            attributes['start_time'] = start_time
+            attributes['end_time'] = end_time
+            attributes['path'] = file
         return attributes
 
     except Exception:

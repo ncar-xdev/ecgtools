@@ -62,7 +62,7 @@ def build(
     """Generates a catalog from a list of files."""
 
     cluster = NCARCluster(
-        cores=8, processes=8, memory='80GB', resource_spec='select=1:ncpus=8:mem=80GB'
+        cores=10, processes=10, memory='100GB', resource_spec='select=1:ncpus=10:mem=100GB'
     )
     cluster.scale(jobs=jobs)
     client = Client(cluster)
