@@ -36,6 +36,8 @@ def parse_files_attributes(
         Number of tasks to batch in a single `dask.delayed` call, by default 25
     """
 
+    console.print('Harvesting attributes/metadata from files...')
+
     def batch(seq):
         return [_parse_file_attributes(x, parser) for x in seq]
 

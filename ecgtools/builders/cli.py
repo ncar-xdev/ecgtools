@@ -8,14 +8,16 @@ from ncar_jobqueue import NCARCluster
 
 from ..core import Builder, console
 from .cesm import smyle_parser
+from .cmip import cmip6_parser
 
 app = typer.Typer(help='ESM Catalog Generation CLI')
 
-parsers = {'cesm2-smyle': smyle_parser}
+parsers = {'cesm2-smyle': smyle_parser, 'cmip6': cmip6_parser}
 
 
 class Collection(Enum):
     cesm2_smyle = 'cesm2-smyle'
+    cmip6 = 'cmip6'
 
 
 class DataFormat(Enum):
@@ -60,9 +62,9 @@ def build(
     """Generates a catalog from a list of files."""
 
     cluster = NCARCluster(
-        cores=8, processes=8, memory='80GB', resource_spec='select=1:ncpus=8:mem=80GB'
+        cores=12, processes=12, memory='120GB', resource_spec='select=1:ncpus=12:mem=120GB'
     )
-    cluster.scale(jobs=jobs)
+    cluster.adapt(minimum_jobs=jobs, maximum_jobs=jobs)
     client = Client(cluster)
 
     with console.status(f'[bold green]Building catalog for {collection.value}...'):
