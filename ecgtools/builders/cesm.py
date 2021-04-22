@@ -9,7 +9,7 @@ from ..core import extract_attr_with_regex
 def smyle_parser(file):
     """Parser for CESM2 Seasonal-to-Multiyear Large Ensemble (SMYLE)"""
     try:
-        with xr.open_dataset(file, chunks={}) as ds:
+        with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
             file = pathlib.Path(file)
             parts = file.parts
             # Case
@@ -20,7 +20,7 @@ def smyle_parser(file):
             # Extract the frequency
             frequency = parts[-2]
 
-            date_regex = r'\d{10}-\d{10}|\d{8}-\d{8}|\d{6}-\d{6}'
+            date_regex = r'\d{10}-\d{10}|\d{8}-\d{8}|\d{6}-\d{6}|\d{4}-\d{4}'
             date_range = extract_attr_with_regex(parts[-1], date_regex)
             # Pull out the start and end time
             start_time, end_time = date_range.split('-')

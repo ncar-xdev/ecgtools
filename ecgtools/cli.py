@@ -1,4 +1,5 @@
 import pathlib
+import socket
 from enum import Enum
 from typing import List
 
@@ -21,6 +22,13 @@ def create_cluster(jobs):
     )
     cluster.adapt(minimum_jobs=jobs, maximum_jobs=jobs)
     client = Client(cluster)
+    host = client.run_on_scheduler(socket.gethostname)
+    port = client.scheduler_info()['services']['dashboard']
+    console.print(
+        '[bold cyan]To access the dashboard link',
+        'run the following (make sure to replace LOGIN_NODE_ADDRESS with the appropriate value)',
+        f'\nssh -N -L {port}:{host}:{port} LOGIN_NODE_ADDRESS',
+    )
     return client, cluster
 
 
