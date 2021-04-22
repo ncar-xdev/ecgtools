@@ -1,42 +1,44 @@
 import cf_xarray  # noqa
 import xarray as xr
 
+from ..core import extract_attr_with_regex
+
 
 def cmip6_parser(file):
     """Parser for CMIP6"""
-    keys = list(
-        set(
-            [
-                'activity_id',
-                'branch_method',
-                'branch_time_in_child',
-                'branch_time_in_parent',
-                'experiment',
-                'experiment_id',
-                'frequency',
-                'grid',
-                'grid_label',
-                'institution',
-                'institution_id',
-                'mip_era',
-                'nominal_resolution',
-                'parent_activity_id',
-                'parent_experiment_id',
-                'parent_mip_era',
-                'parent_source_id',
-                'parent_time_units',
-                'parient_variant_label',
-                'realm',
-                'product',
-                'source_id',
-                'source_type',
-                'sub_experiment',
-                'sub_experiment_id',
-                'table_id',
-                'tracking_id',
-                'variable_id',
-                'variant_label',
-            ]
+    keys = sorted(
+        list(
+            set(
+                [
+                    'activity_id',
+                    'branch_method',
+                    'branch_time_in_child',
+                    'branch_time_in_parent',
+                    'experiment',
+                    'experiment_id',
+                    'frequency',
+                    'grid',
+                    'grid_label',
+                    'institution',
+                    'institution_id',
+                    'nominal_resolution',
+                    'parent_activity_id',
+                    'parent_experiment_id',
+                    'parent_source_id',
+                    'parent_time_units',
+                    'parent_variant_label',
+                    'realm',
+                    'product',
+                    'source_id',
+                    'source_type',
+                    'sub_experiment',
+                    'sub_experiment_id',
+                    'table_id',
+                    'tracking_id',
+                    'variable_id',
+                    'variant_label',
+                ]
+            )
         )
     )
     try:
@@ -53,14 +55,18 @@ def cmip6_parser(file):
             # Set the default of # of vertical levels to 1
             vertical_levels = 1
             start_time, end_time = None, None
-
+            init_year = None
             try:
                 vertical_levels = ds[ds.cf['vertical'].name].size
                 start_time, end_time = str(ds.cf['T'][0].data), str(ds.cf['T'][-1].data)
-
             except (KeyError, AttributeError, ValueError):
                 pass
+            if attributes.get('sub_experiment_id'):
+                init_year = extract_attr_with_regex(attributes['sub_experiment_id'], r'\d{4}')
+                if init_year:
+                    init_year = int(init_year)
             attributes['vertical_levels'] = vertical_levels
+            attributes['init_year'] = init_year
             attributes['start_time'] = start_time
             attributes['end_time'] = end_time
             attributes['path'] = file
