@@ -77,9 +77,11 @@ def _parse_file_attributes(filepath: str, parser: callable = None):
         A dataframe of attributes harvested from the input file.
     """
 
-    results = {'path': filepath}
+    results = {'__asset_path__': filepath, '__is_valid__': True}
     if parser is not None:
         x = parser(filepath)
+        if not x:
+            results['__is_valid__'] = False
         results = {**x, **results}
     return results
 

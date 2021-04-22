@@ -36,10 +36,9 @@ def smyle_parser(file):
             init_year = int(inits[0])
             init_month = int(inits[1])
             member_id = int(z[-1])
-
-            # Pull out the start and end time
-            # start_time, end_time = str(ds.time[0].data), str(ds.time[-1].data)
-            lead = ds.time.size
+            x = case.split(z[0])[0].strip('.').split('.')
+            experiment = x[-2]
+            grid = x[-1]
 
             # Get the long name from dataset
             long_name = ds[variable].attrs.get('long_name')
@@ -68,6 +67,7 @@ def smyle_parser(file):
         return {
             'component': component,
             'case': case,
+            'experiment': experiment,
             'variable': variable,
             'long_name': long_name.lower(),
             'frequency': frequency,
@@ -75,12 +75,12 @@ def smyle_parser(file):
             'member_id': member_id,
             'init_year': init_year,
             'init_month': init_month,
-            'lead': lead,
             'vertical_levels': vertical_levels,
             'units': units,
             'spatial_domain': spatial_domain,
-            'start_time': start_time,
-            'end_time': end_time,
+            'grid': grid,
+            'start_time': str(start_time),
+            'end_time': str(end_time),
             'path': str(file),
         }
 
