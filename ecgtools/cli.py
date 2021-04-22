@@ -6,9 +6,9 @@ import typer
 from distributed import Client
 from ncar_jobqueue import NCARCluster
 
-from ..core import Builder, console
-from .cesm import smyle_parser
-from .cmip import cmip6_parser
+from .builders.cesm import smyle_parser
+from .builders.cmip import cmip6_parser
+from .core import Builder, console
 
 app = typer.Typer(help='ESM Catalog Generation CLI')
 
