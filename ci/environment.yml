@@ -8,14 +8,15 @@ dependencies:
   - dask
   - intake-esm
   - nbsphinx
+  - ncar-jobqueue
   - netcdf4
   - numpydoc
   - pip
+  - pre-commit
   - pytest
   - pytest-cov
+  - pyyaml
+  - rich
+  - typer
   - xarray
   - yamale
-  - pre-commit
-  - typer
-  - ncar-jobqueue
-  - rich

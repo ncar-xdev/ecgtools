@@ -7,3 +7,4 @@ rich
 typer
 xarray
 yamale
+pyyaml
