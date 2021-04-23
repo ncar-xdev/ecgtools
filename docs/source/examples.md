@@ -5,7 +5,7 @@
 ### Seasonal-to-Multiyear Large Ensemble (SMYLE)
 
 ```bash
-ecgtools build cesm2-smyle /glade/campaign/cesm/development/espwg/SMYLE/archive/ --depth 4 --exclude-patterns */glc/* --jobs 20 --description "Seasonal-to-Multiyear Large Ensemble (SMYLE) using CESM2"
+ecgtools build-from-config cesm2-symle.yaml
 ```
 
 ### Large Ensemble (LENS)

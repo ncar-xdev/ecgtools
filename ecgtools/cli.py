@@ -26,8 +26,8 @@ def create_cluster(jobs):
     port = client.scheduler_info()['services']['dashboard']
     console.print(
         '[bold cyan]To access the dashboard link',
-        'run the following (make sure to replace LOGIN_NODE_ADDRESS with the appropriate value)',
-        f'\nssh -N -L {port}:{host}:{port} LOGIN_NODE_ADDRESS',
+        '[bold cyan]run the following (make sure to replace LOGIN_NODE_ADDRESS with the appropriate value)',
+        f'[bold cyan]\nssh -N -L {port}:{host}:{port} LOGIN_NODE_ADDRESS',
     )
     return client, cluster
 
@@ -76,6 +76,7 @@ def _build(
                 format_column=format_column,
                 aggregations=aggregations,
                 groupby_attrs=groupby_attrs,
+                cat_id=catalog_name,
             )
             .save(catalog_file=catalog_file)
         )
@@ -145,7 +146,7 @@ def build(
     parser = parsers[collection.value]
     _build(
         depth=depth,
-        extension=depth,
+        extension=extension,
         exclude_patterns=exclude_patterns,
         nbatches=nbatches,
         path_column=path_column,
