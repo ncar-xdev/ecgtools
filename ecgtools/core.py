@@ -9,6 +9,7 @@ from typing import List
 
 import dask
 from rich.console import Console
+from rich.table import Table
 
 console = Console()
 import pandas as pd
@@ -109,8 +110,12 @@ def extract_attr_with_regex(
 def clean_dataframe(df):
     invalid_assets = df[~df.__is_valid__]['__asset_path__'].tolist()
     df = df[df.__is_valid__].drop(columns=['__is_valid__', '__asset_path__'])
-    console.print('[bold red]Unable to parse the following assets:')
-    console.print(f'[bold cyan]{invalid_assets}')
+    console.print(f'[bold red]Unable to parse the following {len(invalid_assets)} assets:')
+    table = Table(show_header=True, header_style='bold magenta')
+    table.add_column('Path', style='dim', width=12)
+    for item in invalid_assets:
+        table.add_row(item)
+    console.print(table)
     return df, invalid_assets
 
 
