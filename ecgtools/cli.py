@@ -54,9 +54,9 @@ def _build(
 
     with console.status(f'[bold green]Building catalog for {collection}...'):
         if catalog_name is None:
-            catalog_file = f'{collection}.csv'
+            catalog_file = f'{collection}.csv.gz'
         else:
-            catalog_file = f'{catalog_name}.csv'
+            catalog_file = f'{catalog_name}.csv.gz'
         catalog_file = output_path / catalog_file
         _ = (
             Builder(

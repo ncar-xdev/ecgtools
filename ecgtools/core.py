@@ -109,6 +109,8 @@ def extract_attr_with_regex(
 def clean_dataframe(df):
     invalid_assets = df[~df.__is_valid__]['__asset_path__'].tolist()
     df = df[df.__is_valid__].drop(columns=['__is_valid__', '__asset_path__'])
+    console.print('[bold red]Unable to parse the following assets:')
+    console.print(f'[bold cyan]{invalid_assets}')
     return df, invalid_assets
 
 
