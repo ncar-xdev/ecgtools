@@ -126,7 +126,7 @@ def test_builder_update(root_path, parser, num_items, dummy_assets):
         assert (builder.df.size - builder.old_df.size) == builder.new_df.size - len(dummy_assets)
 
 
-@pytest.skip
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'yaml_path, csv_path, validater, expected_df_shape',
     [
@@ -313,7 +313,7 @@ yinput9 = {
 yinput10 = {'catalog': {}}
 
 
-@pytest.skip
+@pytest.mark.skip
 @pytest.mark.parametrize(
     'yaml_path, csv_path, validater, data',
     [
