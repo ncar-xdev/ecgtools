@@ -6,10 +6,26 @@ import xarray as xr
 from ..core import extract_attr_with_regex
 
 
+def parse_date(date):
+    def _join(a):
+        return ''.join(a)
+
+    data = list(str(date))
+    if len(data) == 10:
+        return f'{_join(data[:4])}-{_join(data[4:6])}-{_join(data[6:8])}T{_join(data[8:])}'
+    elif len(data) == 8:
+        return f'{_join(data[:4])}-{_join(data[4:6])}-{_join(data[6:])}'
+    elif len(data) == 6:
+        return f'{_join(data[:4])}-{_join(data[4:])}'
+    elif len(data) == 4:
+        return str(date)
+    return date
+
+
 def smyle_parser(file):
     """Parser for CESM2 Seasonal-to-Multiyear Large Ensemble (SMYLE)"""
     try:
-        with xr.open_dataset(file, chunks={}) as ds:
+        with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
             file = pathlib.Path(file)
             parts = file.parts
             # Case
@@ -20,7 +36,7 @@ def smyle_parser(file):
             # Extract the frequency
             frequency = parts[-2]
 
-            date_regex = r'\d{10}-\d{10}|\d{8}-\d{8}|\d{6}-\d{6}'
+            date_regex = r'\d{10}-\d{10}|\d{8}-\d{8}|\d{6}-\d{6}|\d{4}-\d{4}'
             date_range = extract_attr_with_regex(parts[-1], date_regex)
             # Pull out the start and end time
             start_time, end_time = date_range.split('-')
@@ -36,10 +52,9 @@ def smyle_parser(file):
             init_year = int(inits[0])
             init_month = int(inits[1])
             member_id = int(z[-1])
-
-            # Pull out the start and end time
-            # start_time, end_time = str(ds.time[0].data), str(ds.time[-1].data)
-            lead = ds.time.size
+            x = case.split(z[0])[0].strip('.').split('.')
+            experiment = x[-2]
+            grid = x[-1]
 
             # Get the long name from dataset
             long_name = ds[variable].attrs.get('long_name')
@@ -68,6 +83,7 @@ def smyle_parser(file):
         return {
             'component': component,
             'case': case,
+            'experiment': experiment,
             'variable': variable,
             'long_name': long_name.lower(),
             'frequency': frequency,
@@ -75,12 +91,12 @@ def smyle_parser(file):
             'member_id': member_id,
             'init_year': init_year,
             'init_month': init_month,
-            'lead': lead,
             'vertical_levels': vertical_levels,
             'units': units,
             'spatial_domain': spatial_domain,
-            'start_time': start_time,
-            'end_time': end_time,
+            'grid': grid,
+            'start_time': parse_date(start_time),
+            'end_time': parse_date(end_time),
             'path': str(file),
         }
 

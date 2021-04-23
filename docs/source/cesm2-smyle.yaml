@@ -1,0 +1,35 @@
+catalog_name: campaign-cesm2-symle
+collection: cesm2_smyle
+description: 'Seasonal-to-Multiyear Large Ensemble (SMYLE) using CESM2'
+root_path: /glade/campaign/cesm/development/espwg/SMYLE/archive/
+extension: '*.nc'
+depth: 4
+exclude_patterns: []
+nbatches: 40
+output_path: /glade/u/home/abanihi/work/devel/ncar/intake-esm-datastore/catalogs
+path_column: path
+variable_column: variable
+data_format: netcdf
+groupby_attrs:
+  - component
+  - experiment
+  - frequency
+aggregations:
+  - type: union
+    attribute_name: variable
+  - type: join_new
+    attribute_name: member_id
+    options:
+      coords: minimal
+      compat: override
+  - type: init_year
+    attribute_name: init_year
+    options:
+      coords: minimal
+      compat: override
+  - type: init_month
+    attribute_name: init_month
+    options:
+      coords: minimal
+      compat: override
+jobs: 25

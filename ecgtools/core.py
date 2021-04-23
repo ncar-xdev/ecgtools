@@ -9,6 +9,7 @@ from typing import List
 
 import dask
 from rich.console import Console
+from rich.table import Table
 
 console = Console()
 import pandas as pd
@@ -77,9 +78,11 @@ def _parse_file_attributes(filepath: str, parser: callable = None):
         A dataframe of attributes harvested from the input file.
     """
 
-    results = {'path': filepath}
+    results = {'__asset_path__': filepath, '__is_valid__': True}
     if parser is not None:
         x = parser(filepath)
+        if not x:
+            results['__is_valid__'] = False
         results = {**x, **results}
     return results
 
@@ -102,6 +105,18 @@ def extract_attr_with_regex(
         return match
     else:
         return None
+
+
+def clean_dataframe(df):
+    invalid_assets = df[~df.__is_valid__]['__asset_path__'].tolist()
+    df = df[df.__is_valid__].drop(columns=['__is_valid__', '__asset_path__'])
+    console.print(f'[bold red]Unable to parse the following {len(invalid_assets)} assets:')
+    table = Table(show_header=True, header_style='bold magenta')
+    table.add_column('Path', style='dim', width=12)
+    for item in invalid_assets:
+        table.add_row(item)
+    console.print(table)
+    return df, invalid_assets
 
 
 @dataclasses.dataclass
@@ -352,13 +367,14 @@ class Builder:
         filelist = self.filelist or self._get_filelist_from_dirs()
 
         df = parse_files_attributes(filelist, self.parser, self.lazy, self.nbatches)
-
+        df, invalid_assets = clean_dataframe(df)
         if attributes is None:
             attributes = [{'column_name': column, 'vocabulary': ''} for column in df.columns]
 
         esmcol_data['attributes'] = attributes
         self.esmcol_data = esmcol_data
         self.df = df
+        self.invalid_assets = invalid_assets
         return self
 
     def update(
@@ -386,9 +402,8 @@ class Builder:
         # Previously built catalog
         files_to_parse = list(set(filelist) - set(filelist_from_prev_cat))
         if files_to_parse:
-            self.new_df = parse_files_attributes(
-                files_to_parse, self.parser, self.lazy, self.nbatches
-            )
+            new_df = parse_files_attributes(files_to_parse, self.parser, self.lazy, self.nbatches)
+            self.new_df, self.invalid_assets = clean_dataframe(new_df)
         else:
             self.new_df = pd.DataFrame()
 
