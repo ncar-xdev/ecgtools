@@ -6,6 +6,22 @@ import xarray as xr
 from ..core import extract_attr_with_regex
 
 
+def parse_date(date):
+    def _join(a):
+        return ''.join(a)
+
+    data = list(str(date))
+    if len(data) == 10:
+        return f'{_join(data[:4])}-{_join(data[4:6])}-{_join(data[6:8])}T{_join(data[8:])}'
+    elif len(data) == 8:
+        return f'{_join(data[:4])}-{_join(data[4:6])}-{_join(data[6:])}'
+    elif len(data) == 6:
+        return f'{_join(data[:4])}-{_join(data[4:])}'
+    elif len(data) == 4:
+        return str(date)
+    return date
+
+
 def smyle_parser(file):
     """Parser for CESM2 Seasonal-to-Multiyear Large Ensemble (SMYLE)"""
     try:
@@ -79,8 +95,8 @@ def smyle_parser(file):
             'units': units,
             'spatial_domain': spatial_domain,
             'grid': grid,
-            'start_time': str(start_time),
-            'end_time': str(end_time),
+            'start_time': parse_date(start_time),
+            'end_time': parse_date(end_time),
             'path': str(file),
         }
 
