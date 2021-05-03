@@ -19,4 +19,3 @@ dependencies:
   - rich
   - typer
   - xarray
-  - yamale

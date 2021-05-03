@@ -6,5 +6,4 @@ netCDF4
 rich
 typer
 xarray
-yamale
 pyyaml
