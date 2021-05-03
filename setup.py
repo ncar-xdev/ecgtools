@@ -35,7 +35,6 @@ setup(
     keywords='ecgtools',
     name='ecgtools',
     packages=find_packages(include=['ecgtools', 'ecgtools.*']),
-    data_files=[('schema', ['schema/generic_schema.yaml'])],
     entry_points={'console_scripts': ['ecgtools = ecgtools.cli:main']},
     url='https://github.com/NCAR/ecgtools',
     project_urls={

@@ -9,4 +9,4 @@ try:
     __version__ = get_distribution(__name__).version
 except DistributionNotFound:
     # package is not installed
-    _version__ = '0.0.0'
+    __version__ = '0.0.0'
