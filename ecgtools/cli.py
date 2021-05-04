@@ -8,12 +8,17 @@ from distributed import Client
 from ncar_jobqueue import NCARCluster
 
 from .core import Builder, console
-from .parsers.cesm import smyle_parser
-from .parsers.cmip import cmip6_parser
+from .parsers.cesm import parse_cesm_history, parse_smyle
+from .parsers.cmip import parse_cmip6
 
 app = typer.Typer(help='ESM Catalog Generation CLI')
 
-parsers = {'cesm2_smyle': smyle_parser, 'cmip6': cmip6_parser}
+parsers = {
+    'cesm2_smyle': parse_smyle,
+    'cmip6': parse_cmip6,
+    'cesm1_history': parse_cesm_history,
+    'cesm2_history': parse_cesm_history,
+}
 
 
 def create_cluster(jobs):
