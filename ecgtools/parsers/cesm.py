@@ -80,8 +80,10 @@ def parse_cesm_history(file):
             if extracted_stream:
                 info['component'] = stream.component
                 info['stream'] = stream.name
-                info['case'] = file.stem.lower().split(extracted_stream)[0].strip('.')
+                z = file.stem.lower().split(extracted_stream)
+                info['case'] = z[0].strip('.')
                 info['frequency'] = stream.frequency
+                info['date'] = z[-1].strip('.')
                 break
         with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
             time = ds.cf['time'].name
