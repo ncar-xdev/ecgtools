@@ -33,6 +33,7 @@ _STREAMS_DICT = {
     'pop.h.nday1': {'component': 'ocn', 'frequency': 'day_1'},
     'pop.h.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
     'pop.h.ecosys': {'component': 'ocn', 'frequency': 'month_1'},
+    'pop.h.ecosys.nday1': {'component': 'ocn', 'frequency': 'day_1'},
     'pop.h.ecosys.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
     'cice.h': {'component': 'ice', 'frequency': 'month_1'},
     'cice.h1': {'component': 'ice', 'frequency': 'day_1'},
@@ -48,6 +49,10 @@ class Stream:
     component: str
     frequency: str
 
+
+# Make sure to sort the streams in reverse, the reverse=True is required so as
+# not to confuse `pop.h.ecosys.nday1` and `pop.h.ecosys.nday1` when looping over
+# the list of streams in the parsing function
 
 CESM_STREAMS = [
     Stream(name=key, component=value['component'], frequency=value['frequency'])
