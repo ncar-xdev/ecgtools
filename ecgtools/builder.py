@@ -1,5 +1,6 @@
 import fnmatch
 import itertools
+import pathlib
 import typing
 
 import joblib
@@ -92,3 +93,20 @@ class Builder:
             self.invalid_assets = invalid_assets
             self.df = df
         return self
+
+    def save(
+        self,
+        catalog_file: typing.Union[pathlib.Path, str],
+        invalid_assets_report_file: typing.Union[pathlib.Path, str] = None,
+        **kwargs,
+    ):
+        catalog_file = pathlib.Path(catalog_file)
+        index = kwargs.pop('index') or False
+        self.df.to_csv(catalog_file, index=index, **kwargs)
+        if not self.invalid_assets.empty:
+            invalid_assets_report_file = (
+                pathlib.Path(invalid_assets_report_file)
+                or catalog_file.parent / 'esm_catalog_invalid_assets.csv'
+            )
+            self.invalid_assets.to_csv(invalid_assets_report_file, index=False)
+        print(f'Saved catalog location: {catalog_file}')

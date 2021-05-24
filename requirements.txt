@@ -1,7 +1,6 @@
 cf_xarray
 joblib
 netCDF4
-rich
 typer
 xarray
 pyyaml

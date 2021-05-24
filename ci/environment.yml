@@ -18,6 +18,5 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - pyyaml
-  - rich
   - typer
   - xarray
