@@ -75,13 +75,10 @@ def test_parse_error():
         sample_data_dir / 'cesm',
     ],
 )
-def test_parse(root_path):
-    b = (
-        Builder(root_path, exclude_patterns=['*/files/*', '*/latest/*'], parsing_func=parsing_func)
-        .get_directories()
-        .get_filelist()
-        .parse()
-    )
+def test_build(root_path):
+    b = Builder(
+        root_path, exclude_patterns=['*/files/*', '*/latest/*'], parsing_func=parsing_func
+    ).build()
     assert b.entries
     assert isinstance(b.entries[0], dict)
     assert isinstance(b.df, pd.DataFrame)

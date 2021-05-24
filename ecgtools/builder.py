@@ -108,3 +108,7 @@ class Builder:
             )
             self.invalid_assets.to_csv(invalid_assets_report_file, index=False)
         print(f'Saved catalog location: {catalog_file}')
+
+    def build(self):
+        self.get_directories().get_filelist().parse().clean_dataframe()
+        return self
