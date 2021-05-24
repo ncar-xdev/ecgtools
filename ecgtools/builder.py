@@ -1,5 +1,8 @@
+import datetime
+import enum
 import fnmatch
 import itertools
+import json
 import pathlib
 import typing
 
@@ -9,6 +12,40 @@ import pydantic
 
 INVALID_ASSET = 'INVALID_ASSET'
 TRACEBACK = 'TRACEBACK'
+
+
+class DataFormatEnum(str, enum.Enum):
+    netcdf = 'netcdf'
+    zarr = 'zarr'
+
+
+class Attribute(pydantic.BaseModel):
+    column_name: str
+    vocabulary: str = None
+
+
+class Assets(pydantic.BaseModel):
+    column_name: str
+    format: DataFormatEnum
+
+
+class Aggregation(pydantic.BaseModel):
+    type: str
+    attribute_name: str
+    options: typing.Dict[str, typing.Any]
+
+
+class ESMCollection(pydantic.BaseModel):
+    catalog_file: typing.Union[str, pathlib.Path, pydantic.AnyUrl]
+    attributes: typing.List[Attribute]
+    assets: Assets
+    variable_column: str
+    groupby_attrs: typing.List[str] = None
+    aggregations: typing.List[Aggregation] = None
+    esmcat_version: str = '0.0.1'
+    id: str = None
+    description: str = None
+    last_updated: typing.Union[datetime.datetime, datetime.date] = None
 
 
 @pydantic.dataclasses.dataclass
@@ -32,7 +69,7 @@ class Builder:
 
     """
 
-    root_path: pydantic.types.DirectoryPath
+    root_path: pydantic.DirectoryPath
     extension: str = '*.nc'
     depth: int = 0
     exclude_patterns: typing.List[str] = None
@@ -94,21 +131,55 @@ class Builder:
             self.df = df
         return self
 
+    def build(self):
+        self.get_directories().get_filelist().parse().clean_dataframe()
+        return self
+
     def save(
         self,
-        catalog_file: typing.Union[pathlib.Path, str],
+        catalog_file: typing.Union[str, pathlib.Path, pydantic.AnyUrl],
+        path_column: str,
+        variable_column: str,
+        data_format: DataFormatEnum,
+        groupby_attrs: typing.List[str] = None,
+        aggregations: typing.List[Aggregation] = None,
+        esmcat_version: str = '0.0.1',
+        id: str = None,
+        description: str = None,
+        last_updated: typing.Union[datetime.datetime, datetime.date] = None,
         **kwargs,
     ):
+        last_updated = last_updated or datetime.datetime.now().utcnow().strftime(
+            '%Y-%m-%dT%H:%M:%SZ'
+        )
+
+        for col in {variable_column, path_column}.union(set(groupby_attrs or [])):
+            assert col in self.df.columns, f'{col} must be a column in the dataframe.'
+
+        attributes = [Attribute(column_name=column, vocabulary='') for column in self.df.columns]
+
+        esmcol_data = ESMCollection(
+            catalog_file=catalog_file,
+            variable_column=variable_column,
+            attributes=attributes,
+            assets=Assets(column_name=path_column, format=data_format),
+            groupby_attrs=groupby_attrs,
+            aggregations=aggregations,
+            esmcat_version=esmcat_version,
+            id=id,
+            description=description,
+            last_updated=last_updated,
+        )
+        esmcol_data = json.loads(esmcol_data.json())
         catalog_file = pathlib.Path(catalog_file)
         index = kwargs.pop('index') if 'index' in kwargs else False
         self.df.to_csv(catalog_file, index=index, **kwargs)
         if not self.invalid_assets.empty:
             invalid_assets_report_file = (
-                catalog_file.parent / f'invalid_assets_{catalog_file.parts[-1]}'
+                catalog_file.parent / f'invalid_assets_{catalog_file.stem}.csv'
             )
             self.invalid_assets.to_csv(invalid_assets_report_file, index=False)
-        print(f'Saved catalog location: {catalog_file}')
-
-    def build(self):
-        self.get_directories().get_filelist().parse().clean_dataframe()
-        return self
+        json_path = catalog_file.parent / f'{catalog_file.stem}.json'
+        with open(json_path, mode='w') as outfile:
+            json.dump(esmcol_data, outfile, indent=2)
+        print(f'Saved catalog location: {json_path} and {catalog_file}')

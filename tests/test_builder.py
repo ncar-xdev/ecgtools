@@ -12,7 +12,7 @@ sample_data_dir = pathlib.Path(os.path.dirname(__file__)).parent / 'sample_data'
 
 
 def parsing_func(file):
-    return {'path': file}
+    return {'path': file, 'variable': 'placeholder'}
 
 
 def parsing_func_errors(file):
@@ -101,7 +101,7 @@ def test_parse_invalid_assets():
 def test_save(tmp_path):
     catalog_file = tmp_path / 'test_catalog.csv'
     b = Builder(sample_data_dir / 'cesm', parsing_func=parsing_func).build()
-    b.save(catalog_file)
+    b.save(catalog_file, 'path', 'variable', 'netcdf')
 
     df = pd.read_csv(catalog_file)
     assert len(df) == len(b.df)
