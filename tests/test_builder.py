@@ -96,3 +96,13 @@ def test_parse_invalid_assets():
 
     assert not b.invalid_assets.empty
     assert set(b.invalid_assets.columns) == set([INVALID_ASSET, TRACEBACK])
+
+
+def test_save(tmp_path):
+    catalog_file = tmp_path / 'test_catalog.csv'
+    b = Builder(sample_data_dir / 'cesm', parsing_func=parsing_func).build()
+    b.save(catalog_file)
+
+    df = pd.read_csv(catalog_file)
+    assert len(df) == len(b.df)
+    assert set(df.columns) == set(b.df.columns)
