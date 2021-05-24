@@ -5,16 +5,18 @@ channels:
 dependencies:
   - cf_xarray
   - codecov
-  - dask
   - intake-esm
+  - joblib
   - nbsphinx
-  - ncar-jobqueue
   - netcdf4
   - numpydoc
   - pip
   - pre-commit
+  - pydantic
   - pytest
   - pytest-cov
+  - pytest-sugar
+  - pytest-xdist
   - pyyaml
   - rich
   - typer
