@@ -1,9 +1,8 @@
 cf_xarray
-dask[bag]
-dask[delayed]
-ncar-jobqueue
+joblib
 netCDF4
-rich
 typer
 xarray
 pyyaml
+pydantic
+pandas
