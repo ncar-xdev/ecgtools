@@ -75,13 +75,10 @@ def test_parse_error():
         sample_data_dir / 'cesm',
     ],
 )
-def test_parse(root_path):
-    b = (
-        Builder(root_path, exclude_patterns=['*/files/*', '*/latest/*'], parsing_func=parsing_func)
-        .get_directories()
-        .get_filelist()
-        .parse()
-    )
+def test_build(root_path):
+    b = Builder(
+        root_path, exclude_patterns=['*/files/*', '*/latest/*'], parsing_func=parsing_func
+    ).build()
     assert b.entries
     assert isinstance(b.entries[0], dict)
     assert isinstance(b.df, pd.DataFrame)
@@ -99,3 +96,13 @@ def test_parse_invalid_assets():
 
     assert not b.invalid_assets.empty
     assert set(b.invalid_assets.columns) == set([INVALID_ASSET, TRACEBACK])
+
+
+def test_save(tmp_path):
+    catalog_file = tmp_path / 'test_catalog.csv'
+    b = Builder(sample_data_dir / 'cesm', parsing_func=parsing_func).build()
+    b.save(catalog_file)
+
+    df = pd.read_csv(catalog_file)
+    assert len(df) == len(b.df)
+    assert set(df.columns) == set(b.df.columns)

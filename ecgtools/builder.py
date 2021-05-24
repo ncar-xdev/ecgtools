@@ -39,7 +39,7 @@ class Builder:
     parsing_func: typing.Callable = None
     njobs: int = -1
 
-    def __post_init__(self):
+    def __post_init_post_parse__(self):
         self.df = pd.DataFrame()
         self.invalid_assets = pd.DataFrame()
         self.dirs = None
@@ -100,7 +100,7 @@ class Builder:
         **kwargs,
     ):
         catalog_file = pathlib.Path(catalog_file)
-        index = kwargs.pop('index') or False
+        index = kwargs.pop('index') if 'index' in kwargs else False
         self.df.to_csv(catalog_file, index=index, **kwargs)
         if not self.invalid_assets.empty:
             invalid_assets_report_file = (
@@ -108,3 +108,7 @@ class Builder:
             )
             self.invalid_assets.to_csv(invalid_assets_report_file, index=False)
         print(f'Saved catalog location: {catalog_file}')
+
+    def build(self):
+        self.get_directories().get_filelist().parse().clean_dataframe()
+        return self
