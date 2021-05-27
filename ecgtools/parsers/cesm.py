@@ -91,8 +91,11 @@ def parse_cesm_history(file):
                 info['date'] = z[-1].strip('.')
                 break
         with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
-            time = ds.cf['time'].name
-            time_bounds = ds.cf.get_bounds('time').name
+            time = ds.cf['T'].name
+            try:
+                time_bounds = ds.cf.get_bounds('time').name
+            except KeyError:
+                time_bounds = ''
             variables = [
                 v
                 for v, da in ds.variables.items()
