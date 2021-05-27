@@ -1,3 +1,4 @@
+import json
 import os
 import pathlib
 import traceback
@@ -6,7 +7,7 @@ import pandas as pd
 import pydantic
 import pytest
 
-from ecgtools import INVALID_ASSET, TRACEBACK, Builder
+from ecgtools import Builder
 
 sample_data_dir = pathlib.Path(os.path.dirname(__file__)).parent / 'sample_data'
 
@@ -19,7 +20,7 @@ def parsing_func_errors(file):
     try:
         file.is_valid()
     except:
-        return {INVALID_ASSET: file.as_posix(), TRACEBACK: traceback.format_exc()}
+        return {Builder.INVALID_ASSET: file.as_posix(), Builder.TRACEBACK: traceback.format_exc()}
 
 
 def test_root_path_error():
@@ -95,14 +96,21 @@ def test_parse_invalid_assets():
     )
 
     assert not b.invalid_assets.empty
-    assert set(b.invalid_assets.columns) == set([INVALID_ASSET, TRACEBACK])
+    assert set(b.invalid_assets.columns) == set([Builder.INVALID_ASSET, Builder.TRACEBACK])
 
 
 def test_save(tmp_path):
     catalog_file = tmp_path / 'test_catalog.csv'
+
     b = Builder(sample_data_dir / 'cesm', parsing_func=parsing_func).build()
     b.save(catalog_file, 'path', 'variable', 'netcdf')
 
     df = pd.read_csv(catalog_file)
     assert len(df) == len(b.df)
     assert set(df.columns) == set(b.df.columns)
+
+    json_path = tmp_path / 'test_catalog.json'
+    data = json.load(json_path.open())
+    assert set(
+        ['catalog_file', 'assets', 'aggregations', 'variable_column', 'attributes']
+    ).issubset(set(data.keys()))

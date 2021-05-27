@@ -10,9 +10,6 @@ import joblib
 import pandas as pd
 import pydantic
 
-INVALID_ASSET = 'INVALID_ASSET'
-TRACEBACK = 'TRACEBACK'
-
 
 class DataFormatEnum(str, enum.Enum):
     netcdf = 'netcdf'
@@ -70,11 +67,13 @@ class Builder:
     """
 
     root_path: pydantic.DirectoryPath
-    extension: str = '*.nc'
+    extension: str = '.nc'
     depth: int = 0
     exclude_patterns: typing.List[str] = None
     parsing_func: typing.Callable = None
     njobs: int = -1
+    INVALID_ASSET: typing.ClassVar[str] = 'INVALID_ASSET'
+    TRACEBACK: typing.ClassVar[str] = 'TRACEBACK'
 
     def __post_init_post_parse__(self):
         self.df = pd.DataFrame()
@@ -84,6 +83,14 @@ class Builder:
         self.entries = None
 
     def get_directories(self):
+        """
+        Walk `root_path`'s subdirectories and returns a list of directories
+        up to the specified depth from `root_path`.
+
+        Returns
+        -------
+        `ecgtools.Builder`
+        """
         pattern = '*/' * (self.depth + 1)
         dirs = [x for x in self.root_path.glob(pattern) if x.is_dir()]
         if not dirs:
@@ -101,7 +108,7 @@ class Builder:
             )
 
         def _glob_dir(directory, extension):
-            return list(directory.rglob(f'{extension}'))
+            return list(directory.rglob(f'*{extension}'))
 
         filelist = joblib.Parallel(n_jobs=self.njobs, verbose=5)(
             joblib.delayed(_glob_dir)(directory, self.extension) for directory in self.dirs
@@ -124,9 +131,13 @@ class Builder:
         return self
 
     def clean_dataframe(self):
-        if INVALID_ASSET in self.df.columns:
-            invalid_assets = self.df[self.df[INVALID_ASSET].notnull()][[INVALID_ASSET, TRACEBACK]]
-            df = self.df[self.df[INVALID_ASSET].isnull()].drop(columns=[INVALID_ASSET, TRACEBACK])
+        if self.INVALID_ASSET in self.df.columns:
+            invalid_assets = self.df[self.df[self.INVALID_ASSET].notnull()][
+                [self.INVALID_ASSET, self.TRACEBACK]
+            ]
+            df = self.df[self.df[self.INVALID_ASSET].isnull()].drop(
+                columns=[self.INVALID_ASSET, self.TRACEBACK]
+            )
             self.invalid_assets = invalid_assets
             self.df = df
         return self
@@ -149,6 +160,41 @@ class Builder:
         last_updated: typing.Union[datetime.datetime, datetime.date] = None,
         **kwargs,
     ):
+        """Persist catalog contents to files.
+
+        Parameters
+        ----------
+        catalog_file : str
+           Path to a the CSV file in which catalog contents will be persisted.
+        path_column : str
+           The name of the column containing the path to the asset.
+           Must be in the header of the CSV file.
+        variable_column : str
+            Name of the attribute column in csv file that contains the variable name.
+        data_format : str
+            The data format. Valid values are netcdf and zarr.
+        aggregations : List[dict]
+            List of aggregations to apply to query results, default None
+        esmcat_version : str
+            The ESM Catalog version the collection implements, default None
+        id : str
+            Identifier for the collection, default None
+        description : str
+            Detailed multi-line description to fully explain the collection,
+            default None
+        kwargs : Additional keyword arguments are passed through to the
+                 :py:class:`~pandas.DataFrame.to_csv` method.
+
+        Returns
+        -------
+        `ecgtools.Builder`
+
+        Notes
+        -----
+        See https://github.com/NCAR/esm-collection-spec/blob/master/collection-spec/collection-spec.md
+        for mor
+
+        """
         last_updated = last_updated or datetime.datetime.now().utcnow().strftime(
             '%Y-%m-%dT%H:%M:%SZ'
         )
