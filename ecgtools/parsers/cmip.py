@@ -1,10 +1,13 @@
+import traceback
+
 import cf_xarray  # noqa
 import xarray as xr
 
+from ..builder import INVALID_ASSET, TRACEBACK
 from .utilities import extract_attr_with_regex
 
 
-def cmip6_parser(file):
+def parse_cmip6(file):
     """Parser for CMIP6"""
     keys = sorted(
         list(
@@ -19,7 +22,6 @@ def cmip6_parser(file):
                     'frequency',
                     'grid',
                     'grid_label',
-                    'institution',
                     'institution_id',
                     'nominal_resolution',
                     'parent_activity_id',
@@ -34,7 +36,6 @@ def cmip6_parser(file):
                     'sub_experiment',
                     'sub_experiment_id',
                     'table_id',
-                    'tracking_id',
                     'variable_id',
                     'variant_label',
                 ]
@@ -58,9 +59,13 @@ def cmip6_parser(file):
             init_year = None
             try:
                 vertical_levels = ds[ds.cf['vertical'].name].size
+            except (KeyError, AttributeError, ValueError):
+                ...
+
+            try:
                 start_time, end_time = str(ds.cf['T'][0].data), str(ds.cf['T'][-1].data)
             except (KeyError, AttributeError, ValueError):
-                pass
+                ...
             if attributes.get('sub_experiment_id'):
                 init_year = extract_attr_with_regex(attributes['sub_experiment_id'], r'\d{4}')
                 if init_year:
@@ -73,4 +78,4 @@ def cmip6_parser(file):
         return attributes
 
     except Exception:
-        return {}
+        return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}

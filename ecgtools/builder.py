@@ -10,6 +10,9 @@ import joblib
 import pandas as pd
 import pydantic
 
+INVALID_ASSET = 'INVALID_ASSET'
+TRACEBACK = 'TRACEBACK'
+
 
 class DataFormatEnum(str, enum.Enum):
     netcdf = 'netcdf'
@@ -29,7 +32,7 @@ class Assets(pydantic.BaseModel):
 class Aggregation(pydantic.BaseModel):
     type: str
     attribute_name: str
-    options: typing.Dict[str, typing.Any]
+    options: typing.Optional[typing.Dict[str, typing.Any]]
 
 
 class ESMCollection(pydantic.BaseModel):
@@ -72,8 +75,8 @@ class Builder:
     exclude_patterns: typing.List[str] = None
     parsing_func: typing.Callable = None
     njobs: int = -1
-    INVALID_ASSET: typing.ClassVar[str] = 'INVALID_ASSET'
-    TRACEBACK: typing.ClassVar[str] = 'TRACEBACK'
+    INVALID_ASSET: typing.ClassVar[str] = INVALID_ASSET
+    TRACEBACK: typing.ClassVar[str] = TRACEBACK
 
     def __post_init_post_parse__(self):
         self.df = pd.DataFrame()
