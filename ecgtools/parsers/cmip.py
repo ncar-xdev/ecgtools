@@ -1,7 +1,7 @@
 import cf_xarray  # noqa
 import xarray as xr
 
-from ..core import extract_attr_with_regex
+from .utilities import extract_attr_with_regex
 
 
 def cmip6_parser(file):

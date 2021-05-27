@@ -4,7 +4,7 @@ import pathlib
 import cf_xarray  # noqa
 import xarray as xr
 
-from ..core import extract_attr_with_regex
+from .utilities import extract_attr_with_regex
 
 _STREAMS_DICT = {
     'cam.h0': {'component': 'atm', 'frequency': 'month_1'},
