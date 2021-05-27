@@ -1,0 +1,20 @@
+name: ecgtools-docs
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - sphinx-book-theme
+  - xarray
+  - joblib
+  - pydantic
+  - netcdf4
+  - cf_xarray
+  - jupyterlab
+  - myst-nb
+  - sphinx-copybutton
+  - pip
+  - pip:
+      - sphinxext-opengraph
+      - sphinx-comments
+      - -r ../requirements.txt
+      - -e ..
