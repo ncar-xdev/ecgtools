@@ -93,7 +93,7 @@ def parse_cesm_history(file):
         with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
             time = ds.cf['T'].name
             try:
-                time_bounds = ds.cf.get_bounds('time').name 
+                time_bounds = ds.cf.get_bounds('time').name
             except KeyError:
                 time_bounds = ''
             variables = [
