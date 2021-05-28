@@ -1,9 +1,11 @@
 import dataclasses
 import pathlib
+import traceback
 
 import cf_xarray  # noqa
 import xarray as xr
 
+from ..builder import INVALID_ASSET, TRACEBACK
 from .utilities import extract_attr_with_regex
 
 _STREAMS_DICT = {
@@ -106,7 +108,7 @@ def parse_cesm_history(file):
         return info
 
     except Exception:
-        return {}
+        return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
 
 
 def parse_smyle(file):
@@ -188,4 +190,4 @@ def parse_smyle(file):
         }
 
     except Exception:
-        return {}
+        return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}

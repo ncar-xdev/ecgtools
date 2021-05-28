@@ -1,6 +1,0 @@
-pydata-sphinx-theme
-nbsphinx
-ipykernel
-ipython
-pandoc
--r ../requirements.txt
