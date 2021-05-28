@@ -97,7 +97,6 @@ def parse_cesm_history(file):
                 time = ds.cf['T'].name
             except:
                 print('Unable to parse time')
-        
             # If missing time bounds, fill with empty string
             try:
                 time_bounds = ds.cf.get_bounds('time').name
