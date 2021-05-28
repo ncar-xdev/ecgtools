@@ -10,7 +10,7 @@ If you encounter any errors or problems with **ecgtools**, please open an issue 
 
 ```{toctree}
 ---
-maxdepth: 2
+maxdepth: 1
 caption: Using ecgtools
 ---
 installation.md
