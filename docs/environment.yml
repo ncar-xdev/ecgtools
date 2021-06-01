@@ -12,6 +12,7 @@ dependencies:
   - jupyterlab
   - myst-nb
   - sphinx-copybutton
+  - intake-esm
   - pip
   - pip:
       - sphinxext-opengraph
