@@ -9,39 +9,39 @@ from ..builder import INVALID_ASSET, TRACEBACK
 from .utilities import extract_attr_with_regex
 
 _STREAMS_DICT = {
-    'cam.h0': {'component': 'atm', 'frequency': 'month_1'},
-    'cam.h1': {'component': 'atm', 'frequency': 'day_1'},
-    'cam.h2': {'component': 'atm', 'frequency': 'hour_6'},
-    'cam.h3': {'component': 'atm', 'frequency': 'hour_3'},
-    'cam.h4': {'component': 'atm', 'frequency': 'hour_1'},
-    'cam.h5': {'component': 'atm', 'frequency': 'subhour_3'},
-    'cam.h6': {'component': 'atm', 'frequency': 'day_1'},
-    'cam.h7': {'component': 'atm', 'frequency': 'day_5'},
-    'cam.h8': {'component': 'atm', 'frequency': 'day_10'},
-    'clm2.h0': {'component': 'lnd', 'frequency': 'month_1'},
-    'clm.h1': {'component': 'lnd', 'frequency': 'month_1'},
-    'clm.h2': {'component': 'lnd', 'frequency': 'month_1'},
-    'clm.h3': {'component': 'lnd', 'frequency': 'day_365'},
-    'clm.h4': {'component': 'lnd', 'frequency': 'day_365'},
-    'clm.h5': {'component': 'lnd', 'frequency': 'day_1'},
-    'clm.h6': {'component': 'lnd', 'frequency': 'day_1'},
-    'clm.h7': {'component': 'lnd', 'frequency': 'hour_3'},
-    'clm.h8': {'component': 'lnd', 'frequency': 'day_1'},
-    'mosart.h0': {'component': 'rof', 'frequency': 'month_1'},
-    'mosart.h1': {'component': 'rof', 'frequency': 'day_1'},
-    'mosart.h2': {'component': 'rof', 'frequency': 'hour_6'},
-    'mosart.h3': {'component': 'rof', 'frequency': 'hour_3'},
-    'pop.h': {'component': 'ocn', 'frequency': 'month_1'},
-    'pop.h.nday1': {'component': 'ocn', 'frequency': 'day_1'},
-    'pop.h.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
-    'pop.h.ecosys': {'component': 'ocn', 'frequency': 'month_1'},
-    'pop.h.ecosys.nday1': {'component': 'ocn', 'frequency': 'day_1'},
-    'pop.h.ecosys.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
-    'cice.h': {'component': 'ice', 'frequency': 'month_1'},
-    'cice.h1': {'component': 'ice', 'frequency': 'day_1'},
-    'cism.h': {'component': 'glc', 'frequency': 'year_1'},
-    'cism.h1': {'component': 'glc', 'frequency': 'month_1'},
-    'ww3.h': {'component': 'wav', 'frequency': 'month_1'},
+    'cam.h0': {'component': 'atm'},
+    'cam.h1': {'component': 'atm'},
+    'cam.h2': {'component': 'atm'},
+    'cam.h3': {'component': 'atm'},
+    'cam.h4': {'component': 'atm'},
+    'cam.h5': {'component': 'atm'},
+    'cam.h6': {'component': 'atm'},
+    'cam.h7': {'component': 'atm'},
+    'cam.h8': {'component': 'atm'},
+    'clm2.h0': {'component': 'lnd'},
+    'clm.h1': {'component': 'lnd'},
+    'clm.h2': {'component': 'lnd'},
+    'clm.h3': {'component': 'lnd'},
+    'clm.h4': {'component': 'lnd'},
+    'clm.h5': {'component': 'lnd'},
+    'clm.h6': {'component': 'lnd'},
+    'clm.h7': {'component': 'lnd'},
+    'clm.h8': {'component': 'lnd'},
+    'mosart.h0': {'component': 'rof'},
+    'mosart.h1': {'component': 'rof'},
+    'mosart.h2': {'component': 'rof'},
+    'mosart.h3': {'component': 'rof'},
+    'pop.h': {'component': 'ocn'},
+    'pop.h.nday1': {'component': 'ocn'},
+    'pop.h.nyear1': {'component': 'ocn'},
+    'pop.h.ecosys': {'component': 'ocn'},
+    'pop.h.ecosys.nday1': {'component': 'ocn'},
+    'pop.h.ecosys.nyear1': {'component': 'ocn'},
+    'cice.h': {'component': 'ice'},
+    'cice.h1': {'component': 'ice'},
+    'cism.h': {'component': 'glc'},
+    'cism.h1': {'component': 'glc'},
+    'ww3.h': {'component': 'wav'},
 }
 
 
@@ -49,7 +49,6 @@ _STREAMS_DICT = {
 class Stream:
     name: str
     component: str
-    frequency: str
 
 
 # Make sure to sort the streams in reverse, the reverse=True is required so as
@@ -57,7 +56,7 @@ class Stream:
 # the list of streams in the parsing function
 
 CESM_STREAMS = [
-    Stream(name=key, component=value['component'], frequency=value['frequency'])
+    Stream(name=key, component=value['component'])
     for key, value in sorted(_STREAMS_DICT.items(), reverse=True)
 ]
 
@@ -89,11 +88,16 @@ def parse_cesm_history(file):
                 info['stream'] = stream.name
                 z = file.stem.lower().split(extracted_stream)
                 info['case'] = z[0].strip('.')
-                info['frequency'] = stream.frequency
                 info['date'] = z[-1].strip('.')
                 break
         with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
-            time = ds.cf['T'].name
+            try:
+                time = ds.cf['time'].name
+            except KeyError:
+                time = ds.cf['T'].name
+            except:
+                print('Unable to parse time')
+            # If missing time bounds, fill with empty string
             try:
                 time_bounds = ds.cf.get_bounds('time').name
             except KeyError:
@@ -103,6 +107,7 @@ def parse_cesm_history(file):
                 for v, da in ds.variables.items()
                 if time in da.dims and v not in {time, time_bounds}
             ]
+            info['frequency'] = ds.attrs['time_period_freq']
             info['variables'] = variables
             info['path'] = str(file)
         return info
