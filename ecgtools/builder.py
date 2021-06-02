@@ -36,7 +36,7 @@ class Aggregation(pydantic.BaseModel):
 
 
 class AggregationControl(pydantic.BaseModel):
-    variable_column: str
+    variable_column_name: str
     groupby_attrs: typing.List[str] = None
     aggregations: typing.List[Aggregation] = None
 
@@ -212,7 +212,9 @@ class Builder:
         attributes = [Attribute(column_name=column, vocabulary='') for column in self.df.columns]
 
         _aggregation_control = AggregationControl(
-            variable_column=variable_column, groupby_attrs=groupby_attrs, aggregations=aggregations
+            variable_column_name=variable_column_name,
+            groupby_attrs=groupby_attrs,
+            aggregations=aggregations,
         )
 
         esmcol_data = ESMCollection(
