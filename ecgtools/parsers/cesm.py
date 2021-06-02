@@ -110,6 +110,9 @@ def parse_cesm_history(file):
             info['frequency'] = ds.attrs['time_period_freq']
             info['variables'] = variables
             info['path'] = str(file)
+            # Check to ensure that the stream information is not missing
+            if info['stream'] is None:
+                raise Exception('Missing stream information')
         return info
 
     except Exception:
