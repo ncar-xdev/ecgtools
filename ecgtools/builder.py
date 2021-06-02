@@ -157,7 +157,7 @@ class Builder:
         self,
         catalog_file: typing.Union[str, pathlib.Path, pydantic.AnyUrl],
         path_column: str,
-        variable_column: str,
+        variable_column_name: str,
         data_format: DataFormatEnum,
         groupby_attrs: typing.List[str] = None,
         aggregations: typing.List[Aggregation] = None,
@@ -176,7 +176,7 @@ class Builder:
         path_column : str
            The name of the column containing the path to the asset.
            Must be in the header of the CSV file.
-        variable_column : str
+        variable_column_name : str
             Name of the attribute column in csv file that contains the variable name.
         data_format : str
             The data format. Valid values are netcdf and zarr.
@@ -206,7 +206,7 @@ class Builder:
             '%Y-%m-%dT%H:%M:%SZ'
         )
 
-        for col in {variable_column, path_column}.union(set(groupby_attrs or [])):
+        for col in {variable_column_name, path_column}.union(set(groupby_attrs or [])):
             assert col in self.df.columns, f'{col} must be a column in the dataframe.'
 
         attributes = [Attribute(column_name=column, vocabulary='') for column in self.df.columns]
