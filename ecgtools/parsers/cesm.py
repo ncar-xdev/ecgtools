@@ -86,7 +86,7 @@ def parse_cesm_history(file):
             if extracted_stream:
                 info['component'] = stream.component
                 info['stream'] = stream.name
-                z = file.stem.lower().split(extracted_stream)
+                z = file.stem.split(extracted_stream)
                 info['case'] = z[0].strip('.')
                 info['date'] = z[-1].strip('.')
                 break
