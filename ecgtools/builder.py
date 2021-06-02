@@ -35,13 +35,17 @@ class Aggregation(pydantic.BaseModel):
     options: typing.Optional[typing.Dict[str, typing.Any]]
 
 
+class AggregationControl(pydantic.BaseModel):
+    variable_column: str
+    groupby_attrs: typing.List[str] = None
+    aggregations: typing.List[Aggregation] = None
+
+
 class ESMCollection(pydantic.BaseModel):
     catalog_file: typing.Union[str, pathlib.Path, pydantic.AnyUrl]
     attributes: typing.List[Attribute]
     assets: Assets
-    variable_column: str
-    groupby_attrs: typing.List[str] = None
-    aggregations: typing.List[Aggregation] = None
+    aggregation_control: AggregationControl
     esmcat_version: str = '0.0.1'
     id: str = None
     description: str = None
@@ -207,13 +211,15 @@ class Builder:
 
         attributes = [Attribute(column_name=column, vocabulary='') for column in self.df.columns]
 
+        _aggregation_control = AggregationControl(
+            variable_column=variable_column, groupby_attrs=groupby_attrs, aggregations=aggregations
+        )
+
         esmcol_data = ESMCollection(
             catalog_file=catalog_file,
-            variable_column=variable_column,
             attributes=attributes,
             assets=Assets(column_name=path_column, format=data_format),
-            groupby_attrs=groupby_attrs,
-            aggregations=aggregations,
+            aggregation_control=_aggregation_control,
             esmcat_version=esmcat_version,
             id=id,
             description=description,
