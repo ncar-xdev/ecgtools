@@ -111,6 +111,6 @@ def test_save(tmp_path):
 
     json_path = tmp_path / 'test_catalog.json'
     data = json.load(json_path.open())
-    assert set(
-        ['catalog_file', 'assets', 'aggregations', 'variable_column', 'attributes']
-    ).issubset(set(data.keys()))
+    assert set(['catalog_file', 'assets', 'aggregation_control', 'attributes']).issubset(
+        set(data.keys())
+    )
