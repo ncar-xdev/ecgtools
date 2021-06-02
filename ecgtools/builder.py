@@ -156,7 +156,7 @@ class Builder:
     def save(
         self,
         catalog_file: typing.Union[str, pathlib.Path, pydantic.AnyUrl],
-        path_column: str,
+        path_column_name: str,
         variable_column_name: str,
         data_format: DataFormatEnum,
         groupby_attrs: typing.List[str] = None,
@@ -173,7 +173,7 @@ class Builder:
         ----------
         catalog_file : str
            Path to a the CSV file in which catalog contents will be persisted.
-        path_column : str
+        path_column_name : str
            The name of the column containing the path to the asset.
            Must be in the header of the CSV file.
         variable_column_name : str
@@ -206,7 +206,7 @@ class Builder:
             '%Y-%m-%dT%H:%M:%SZ'
         )
 
-        for col in {variable_column_name, path_column}.union(set(groupby_attrs or [])):
+        for col in {variable_column_name, path_column_name}.union(set(groupby_attrs or [])):
             assert col in self.df.columns, f'{col} must be a column in the dataframe.'
 
         attributes = [Attribute(column_name=column, vocabulary='') for column in self.df.columns]
@@ -220,7 +220,7 @@ class Builder:
         esmcol_data = ESMCollection(
             catalog_file=catalog_file,
             attributes=attributes,
-            assets=Assets(column_name=path_column, format=data_format),
+            assets=Assets(column_name=path_column_name, format=data_format),
             aggregation_control=_aggregation_control,
             esmcat_version=esmcat_version,
             id=id,
