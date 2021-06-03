@@ -165,6 +165,7 @@ class Builder:
         id: str = None,
         description: str = None,
         last_updated: typing.Union[datetime.datetime, datetime.date] = None,
+        use_relative_path: bool = True,
         **kwargs,
     ):
         """Persist catalog contents to files.
@@ -189,6 +190,9 @@ class Builder:
         description : str
             Detailed multi-line description to fully explain the collection,
             default None
+        use_relative_path: bool
+            Whether to use a relative path for the catalog file (csv file)
+            entry in the json file, default True
         kwargs : Additional keyword arguments are passed through to the
                  :py:class:`~pandas.DataFrame.to_csv` method.
 
@@ -217,8 +221,10 @@ class Builder:
             aggregations=aggregations,
         )
 
+        _catalog_file = pathlib.Path(catalog_file)
+        catalog_file_location = _catalog_file.name if use_relative_path else str(_catalog_file)
         esmcol_data = ESMCollection(
-            catalog_file=catalog_file,
+            catalog_file=catalog_file_location,
             attributes=attributes,
             assets=Assets(column_name=path_column_name, format=data_format),
             aggregation_control=_aggregation_control,
@@ -228,15 +234,14 @@ class Builder:
             last_updated=last_updated,
         )
         esmcol_data = json.loads(esmcol_data.json())
-        catalog_file = pathlib.Path(catalog_file)
         index = kwargs.pop('index') if 'index' in kwargs else False
-        self.df.to_csv(catalog_file, index=index, **kwargs)
+        self.df.to_csv(_catalog_file, index=index, **kwargs)
         if not self.invalid_assets.empty:
             invalid_assets_report_file = (
-                catalog_file.parent / f'invalid_assets_{catalog_file.stem}.csv'
+                _catalog_file.parent / f'invalid_assets_{_catalog_file.stem}.csv'
             )
             self.invalid_assets.to_csv(invalid_assets_report_file, index=False)
-        json_path = catalog_file.parent / f'{catalog_file.stem}.json'
+        json_path = _catalog_file.parent / f'{_catalog_file.stem}.json'
         with open(json_path, mode='w') as outfile:
             json.dump(esmcol_data, outfile, indent=2)
-        print(f'Saved catalog location: {json_path} and {catalog_file}')
+        print(f'Saved catalog location: {json_path} and {_catalog_file}')
