@@ -1,6 +1,7 @@
 import dataclasses
 import pathlib
 import traceback
+import warnings
 
 import cf_xarray  # noqa
 import xarray as xr
@@ -42,6 +43,21 @@ _STREAMS_DICT = {
     'cism.h': {'component': 'glc'},
     'cism.h1': {'component': 'glc'},
     'ww3.h': {'component': 'wav'},
+}
+
+frequency_dict = {
+    'cam.h0': 'monthly',
+    'cam.h1': 'daily',
+    'cam.h2': 'hourly6',
+    'cice.h': 'monthly',
+    'cice.h1': 'daily',
+    'clm2.h0': 'monthly',
+    'clm2.h1': 'daily',
+    'pop.h.ecosys.nyear1': 'annual',
+    'pop.h.ecosys.nday1': 'daily',
+    'pop.h': 'monthly',
+    'rtm.h0': 'monthly',
+    'rtm.h1': 'daily',
 }
 
 
@@ -113,6 +129,60 @@ def parse_cesm_history(file):
             # Check to ensure that the stream information is not missing
             if info['stream'] is None:
                 raise Exception('Missing stream information')
+        return info
+
+    except Exception:
+        return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
+
+
+def parse_cesm_timeseries(file, frequency_dict=frequency_dict):
+    """Parser for CESM Timeseries files"""
+    file = pathlib.Path(file)
+    info = {}
+    try:
+        for stream in CESM_STREAMS:
+            extracted_stream = extract_attr_with_regex(file.stem.lower(), stream.name.lower())
+            if extracted_stream:
+                info['component'] = stream.component
+                info['stream'] = stream.name
+                z = file.stem.split(extracted_stream)
+                info['case'] = z[0].strip('.')
+                info['member_id'] = int(info['case'].split('.')[-1])
+
+                # Use the last part to get variable and time info
+                date_and_variable = z[-1].split('.')
+
+                info['variable'] = date_and_variable[-2]
+                date_range = date_and_variable[-1]
+                start_time, end_time = date_range.split('-')
+                info['start_time'] = parse_date(start_time)
+                info['end_time'] = parse_date(end_time)
+                info['time_range'] = date_range
+                break
+        with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
+
+            # Get the long name from dataset
+            info['long_name'] = ds[info['variable']].attrs.get('long_name')
+
+            # Grab the units of the variable
+            info['units'] = ds[info['variable']].attrs.get('units')
+
+            # Set the default of # of vertical levels to 1
+            info['vertical_levels'] = 1
+
+            try:
+                info['vertical_levels'] = ds[ds.cf['vertical'].name].size
+            except (KeyError, AttributeError, ValueError):
+                pass
+
+            try:
+                info['frequency'] = ds.attrs['time_period_freq']
+
+            except AttributeError:
+                warnings.warn('Using the default frequency definitions')
+                info['frequency'] = frequency_dict[info['stream']]
+
+            info['path'] = str(file)
         return info
 
     except Exception:
