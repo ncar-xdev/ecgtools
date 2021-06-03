@@ -74,7 +74,10 @@ def parse_cmip6(file):
             attributes['init_year'] = init_year
             attributes['start_time'] = start_time
             attributes['end_time'] = end_time
-            attributes['time_range'] = f'{start_time}-{end_time}'
+            if (start_time is None) & (end_time is None):
+                attributes['time_range'] = None
+            else:
+                attributes['time_range'] = f'{start_time}-{end_time}'
             attributes['path'] = file
         return attributes
 
