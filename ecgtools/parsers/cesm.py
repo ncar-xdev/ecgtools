@@ -40,6 +40,7 @@ _STREAMS_DICT = {
     'pop.h.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
     'pop.h.ecosys': {'component': 'ocn', 'frequency': 'month_1'},
     'pop.h.ecosys.nday1': {'component': 'ocn', 'frequency': 'day_1'},
+    'pop.h.ecosys.nday5': {'component': 'ocn', 'frequency': 'day_5'},
     'pop.h.ecosys.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
     'cice.h': {'component': 'ice', 'frequency': 'month_1'},
     'cice.h1': {'component': 'ice', 'frequency': 'day_1'},
