@@ -37,6 +37,7 @@ _STREAMS_DICT = {
     'rtm.h1': {'component': 'rof', 'frequency': 'day_1'},
     'pop.h': {'component': 'ocn', 'frequency': 'month_1'},
     'pop.h.nday1': {'component': 'ocn', 'frequency': 'day_1'},
+    'pop.h.nday5': {'component': 'ocn', 'frequency': 'day_5'},
     'pop.h.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
     'pop.h.ecosys': {'component': 'ocn', 'frequency': 'month_1'},
     'pop.h.ecosys.nday1': {'component': 'ocn', 'frequency': 'day_1'},
