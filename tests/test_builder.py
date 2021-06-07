@@ -77,9 +77,13 @@ def test_parse_error():
     ],
 )
 def test_build(root_path):
+    def func(df):
+        df['my_column'] = ['test']
+        return df
+
     b = Builder(
         root_path, exclude_patterns=['*/files/*', '*/latest/*'], parsing_func=parsing_func
-    ).build()
+    ).build(postprocess_func=func)
     assert b.entries
     assert isinstance(b.entries[0], dict)
     assert isinstance(b.df, pd.DataFrame)
