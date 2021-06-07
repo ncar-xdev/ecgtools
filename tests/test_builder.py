@@ -84,6 +84,7 @@ def test_build(root_path):
     b = Builder(
         root_path, exclude_patterns=['*/files/*', '*/latest/*'], parsing_func=parsing_func
     ).build(postprocess_func=func)
+    assert 'my_column' in b.df.columns
     assert b.entries
     assert isinstance(b.entries[0], dict)
     assert isinstance(b.df, pd.DataFrame)
