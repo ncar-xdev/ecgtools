@@ -42,16 +42,18 @@ def parse_cmip6(file):
             )
         )
     )
-    try:
-        with xr.open_dataset(file, chunks={}, use_cftime=True) as ds:
-            attributes = {key: ds.attrs.get(key) for key in keys}
-            attributes['member_id'] = attributes['variant_label']
 
-            variable_id = attributes['variable_id']
+    try:
+
+        with xr.open_dataset(file, chunks={}, use_cftime=True) as ds:
+            info = {key: ds.attrs.get(key) for key in keys}
+            info['member_id'] = info['variant_label']
+
+            variable_id = info['variable_id']
             if variable_id:
                 attrs = ds[variable_id].attrs
                 for attr in ['standard_name', 'long_name', 'units']:
-                    attributes[attr] = attrs.get(attr)
+                    info[attr] = attrs.get(attr)
 
             # Set the default of # of vertical levels to 1
             vertical_levels = 1
@@ -66,20 +68,23 @@ def parse_cmip6(file):
                 start_time, end_time = str(ds.cf['T'][0].data), str(ds.cf['T'][-1].data)
             except (KeyError, AttributeError, ValueError):
                 ...
-            if attributes.get('sub_experiment_id'):
-                init_year = extract_attr_with_regex(attributes['sub_experiment_id'], r'\d{4}')
+            if info.get('sub_experiment_id'):
+                init_year = extract_attr_with_regex(info['sub_experiment_id'], r'\d{4}')
                 if init_year:
                     init_year = int(init_year)
-            attributes['vertical_levels'] = vertical_levels
-            attributes['init_year'] = init_year
-            attributes['start_time'] = start_time
-            attributes['end_time'] = end_time
+            info['vertical_levels'] = vertical_levels
+            info['init_year'] = init_year
+            info['start_time'] = start_time
+            info['end_time'] = end_time
             if not (start_time and end_time):
-                attributes['time_range'] = None
+                info['time_range'] = None
             else:
-                attributes['time_range'] = f'{start_time}-{end_time}'
-            attributes['path'] = file
-        return attributes
+                info['time_range'] = f'{start_time}-{end_time}'
+        info['path'] = str(file)
+        info['version'] = (
+            extract_attr_with_regex(str(file), regex=r'v\d{4}\d{2}\d{2}|v\d{1}') or 'v0'
+        )
+        return info
 
     except Exception:
         return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}

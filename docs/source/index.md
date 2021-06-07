@@ -14,8 +14,15 @@ maxdepth: 1
 caption: Using ecgtools
 ---
 installation.md
-notebooks/cmip6-glade.ipynb
 notebooks/cesm-history-files.ipynb
+```
+
+```{toctree}
+---
+maxdepth: 1
+caption: Examples
+---
+notebooks/cmip6-glade.ipynb
 ```
 
 ```{toctree}
