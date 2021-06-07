@@ -42,5 +42,10 @@ setup(
         'Source': 'https://github.com/NCAR/ecgtools',
         'Tracker': 'https://github.com/NCAR/ecgtools/issues',
     },
+    use_scm_version={
+        'version_scheme': 'post-release',
+        'local_scheme': 'dirty-tag',
+    },
+    setup_requires=['setuptools_scm', 'setuptools>=30.3.0'],
     zip_safe=False,
 )
