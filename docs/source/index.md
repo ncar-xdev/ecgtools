@@ -18,6 +18,7 @@ notebooks/cesm-history-files.ipynb
 ```
 
 ```{toctree}
+---
 maxdepth: 1
 caption: Examples
 ---
