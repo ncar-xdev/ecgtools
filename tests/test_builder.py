@@ -78,7 +78,7 @@ def test_parse_error():
 )
 def test_build(root_path):
     def func(df):
-        df['my_column'] = ['test']
+        df['my_column'] = 'test'
         return df
 
     b = Builder(
