@@ -5,6 +5,7 @@ import itertools
 import json
 import pathlib
 import typing
+import warnings
 
 import joblib
 import pandas as pd
@@ -65,12 +66,13 @@ class Builder:
         File extension, by default None. If None, the builder will look for files with
         "*.nc" extension.
     depth : int, optional
-        Recursion depth. Recursively crawl `root_path` up to a specified depth, by default None
+        Recursion depth. Recursively crawl `root_path` up to a specified depth, by default 0
     exclude_patterns : list, optional
-        Directory, file patterns to exclude during catalog generation, by default None
+        Directory, file patterns to exclude during catalog generation.
+        These could be substring or regular expressions. by default None
     parsing_func : callable, optional
-            A function that will be called to parse
-            attributes from a given file/filepath, by default None
+        A function that will be called to parse
+        attributes from a given file/filepath, by default None
     njobs : int, optional
         The maximum number of concurrently running jobs,
         by default -1 meaning all CPUs are used.
@@ -150,6 +152,11 @@ class Builder:
                 columns=[self.INVALID_ASSET, self.TRACEBACK]
             )
             self.invalid_assets = invalid_assets
+            if not self.invalid_assets.empty:
+                warnings.warn(
+                    f'Unable to parse {len(self.invalid_assets)} assets/files. A list of these assets can be found in `.invalid_assets` attribute.',
+                    stacklevel=2,
+                )
             self.df = df
         return self
 
@@ -255,6 +262,10 @@ class Builder:
         if not self.invalid_assets.empty:
             invalid_assets_report_file = (
                 _catalog_file.parent / f'invalid_assets_{_catalog_file.stem}.csv'
+            )
+            warnings.warn(
+                f'Unable to parse {len(self.invalid_assets)} assets/files. A list of these assets can be found in {invalid_assets_report_file}.',
+                stacklevel=2,
             )
             self.invalid_assets.to_csv(invalid_assets_report_file, index=False)
         json_path = _catalog_file.parent / f'{_catalog_file.stem}.json'
