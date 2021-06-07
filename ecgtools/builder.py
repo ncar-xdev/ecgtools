@@ -68,8 +68,12 @@ class Builder:
         Recursion depth. Recursively crawl `root_path` up to a specified depth, by default None
     exclude_patterns : list, optional
         Directory, file patterns to exclude during catalog generation, by default None
+    parsing_func : callable, optional
+            A function that will be called to parse
+            attributes from a given file/filepath, by default None
     njobs : int, optional
-        The maximum number of concurrently running jobs, by default 25
+        The maximum number of concurrently running jobs,
+        by default -1 meaning all CPUs are used.
 
     """
 
@@ -149,8 +153,20 @@ class Builder:
             self.df = df
         return self
 
-    def build(self):
+    def build(self, postprocess_func: typing.Callable = None):
+        """Collect a list of files and harvest attributes from them.
+        Parameters
+        ----------
+        postprocess_func: Callable, optional
+             A function that will be used to postprocess the built dataframe.
+
+        Returns
+        -------
+        `ecgtools.Builder`
+        """
         self.get_directories().get_filelist().parse().clean_dataframe()
+        if postprocess_func:
+            self.df = postprocess_func(self.df)
         return self
 
     def save(
