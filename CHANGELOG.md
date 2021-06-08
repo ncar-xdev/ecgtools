@@ -1,10 +1,26 @@
 # Changelog
 
+## v2021.6.8
+
+([full changelog](https://github.com/NCAR/ecgtools/compare/v2021.6.7...ceb56b149363b4fb1cbef18c5a72796d21c50c96))
+
+### Merged PRs
+
+- Warn when invalid_assets is not empty [#44](https://github.com/NCAR/ecgtools/pull/44) ([@andersy005](https://github.com/andersy005))
+- Use setuptools_scm for managing package version [#43](https://github.com/NCAR/ecgtools/pull/43) ([@andersy005](https://github.com/andersy005))
+- Update changelog in prep for first release [#41](https://github.com/NCAR/ecgtools/pull/41) ([@andersy005](https://github.com/andersy005))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/NCAR/ecgtools/graphs/contributors?from=2021-06-07&to=2021-06-09&type=c))
+
+[@andersy005](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Aandersy005+updated%3A2021-06-07..2021-06-09&type=Issues)
+
 ## v2021.6.7
 
 ([full changelog](https://github.com/NCAR/ecgtools/compare/e5108a4edfef211b64dcb69a28f57247e717237b...fbc41f23244798fe90782cbea672b21fee0d373b))
 
-## Merged PRs
+### Merged PRs
 
 - Add `postprocess` func [#40](https://github.com/NCAR/ecgtools/pull/40) ([@andersy005](https://github.com/andersy005))
 - Add version to CMIP6 parser [#39](https://github.com/NCAR/ecgtools/pull/39) ([@andersy005](https://github.com/andersy005))
