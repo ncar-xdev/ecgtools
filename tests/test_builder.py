@@ -92,13 +92,9 @@ def test_build(root_path):
 
 
 def test_parse_invalid_assets():
-    b = (
-        Builder(sample_data_dir / 'cesm')
-        .get_directories()
-        .get_filelist()
-        .parse(parsing_func=parsing_func_errors)
-        .clean_dataframe()
-    )
+
+    with pytest.warns(UserWarning):
+        b = Builder(sample_data_dir / 'cesm', parsing_func=parsing_func_errors).build()
 
     assert not b.invalid_assets.empty
     assert set(b.invalid_assets.columns) == set([Builder.INVALID_ASSET, Builder.TRACEBACK])
