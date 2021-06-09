@@ -58,24 +58,7 @@ class Stream:
 
 
 # Make sure to sort the streams in reverse, the reverse=True is required so as
-# not to confuse `pop.h.ecosys.nday1` and `pop.h.ecosys.nday1` when looping over
-# the list of streams in the parsing function
-
-CESM_STREAMS = [
-    Stream(name=key, component=value['component'], frequency=value['frequency'])
-    for key, value in sorted(_STREAMS_DICT.items(), reverse=True)
-]
-
-
-@dataclasses.dataclass
-class Stream:
-    name: str
-    component: str
-    frequency: str
-
-
-# Make sure to sort the streams in reverse, the reverse=True is required so as
-# not to confuse `pop.h.ecosys.nday1` and `pop.h.ecosys.nday1` when looping over
+# not to confuse `pop.h` and `pop.h.ecosys.nday1` when looping over
 # the list of streams in the parsing function
 
 CESM_STREAMS = [
