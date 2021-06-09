@@ -1,0 +1,111 @@
+cam.h0: # Atmosphere streams
+  component: atm
+  default_frequency: month_1
+cam.h1:
+  component: atm
+  default_frequency: day_1
+cam.h2:
+  component: atm
+  default_frequency: hour_6
+cam.h3:
+  component: atm
+  default_frequency: hour_3
+cam.h4:
+  component: atm
+  default_frequency: hour_1
+cam.h5:
+  component: atm
+  default_frequency: subhour_3
+cam.h6:
+  component: atm
+  default_frequency: day_1
+cam.h7:
+  component: atm
+  default_frequency: day_5
+cam.h8:
+  component: atm
+  default_frequency: day_10
+clm2.h0: # Land streams
+  component: lnd
+  default_frequency: month_1
+clm2.h1:
+  component: lnd
+  default_frequency: day_1
+clm.h1:
+  component: lnd
+  default_frequency: month_1
+clm.h2:
+  component: lnd
+  default_frequency: month_1
+clm.h3:
+  component: lnd
+  default_frequency: day_365
+clm.h4:
+  component: lnd
+  default_frequency: day_365
+clm.h5:
+  component: lnd
+  default_frequency: day_1
+clm.h6:
+  component: lnd
+  default_frequency: day_1
+clm.h7:
+  component: lnd
+  default_frequency: hour_3
+clm.h8:
+  component: lnd
+  default_frequency: day_1
+mosart.h0: # River streams
+  component: rof
+  default_frequency: month_1
+mosart.h1:
+  component: rof
+  default_frequency: day_1
+mosart.h2:
+  component: rof
+  default_frequency: hour_6
+mosart.h3:
+  component: rof
+  default_frequency: hour_3
+rtm.h0:
+  component: rof
+  default_frequency: month_1
+rtm.h1:
+  component: rof
+  default_frequency: day_1
+pop.h: # Ocean streams
+  component: ocn
+  default_frequency: month_1
+pop.h.nday1:
+  component: ocn
+  default_frequency: day_1
+pop.h.nyear1:
+  component: ocn
+  default_frequency: year_1
+pop.h.ecosys:
+  component: ocn
+  default_frequency: month_1
+pop.h.ecosys.nday:
+  component: ocn
+  default_frequency: day_1
+pop.h.ecosys.nday5:
+  component: ocn
+  default_frequency: day_5
+pop.h.ecosys.nyear1:
+  component: ocn
+  default_frequency: year_1
+cice.h: # Sea ice streams
+  component: ice
+  default_frequency: month_1
+cice.h1:
+  component: ice
+  default_frequency: day_1
+cism.h: # Land ice streams
+  component: glc
+  default_frequency: year_1
+cism.h1:
+  component: glc
+  default_frequency: month_1
+ww3.h: # Wave streams
+  component: wav
+  default_frequency: month_1

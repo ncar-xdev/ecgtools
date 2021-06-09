@@ -5,66 +5,33 @@ import warnings
 
 import cf_xarray  # noqa
 import xarray as xr
+import yaml
 
 from ..builder import INVALID_ASSET, TRACEBACK
 from .utilities import extract_attr_with_regex
 
-_STREAMS_DICT = {
-    'cam.h0': {'component': 'atm', 'frequency': 'month_1'},
-    'cam.h1': {'component': 'atm', 'frequency': 'day_1'},
-    'cam.h2': {'component': 'atm', 'frequency': 'hour_6'},
-    'cam.h3': {'component': 'atm', 'frequency': 'hour_3'},
-    'cam.h4': {'component': 'atm', 'frequency': 'hour_1'},
-    'cam.h5': {'component': 'atm', 'frequency': 'subhour_3'},
-    'cam.h6': {'component': 'atm', 'frequency': 'day_1'},
-    'cam.h7': {'component': 'atm', 'frequency': 'day_5'},
-    'cam.h8': {'component': 'atm', 'frequency': 'day_10'},
-    'clm2.h0': {'component': 'lnd', 'frequency': 'month_1'},
-    'clm2.h1': {'component': 'lnd', 'frequency': 'day_1'},
-    'clm.h1': {'component': 'lnd', 'frequency': 'month_1'},
-    'clm.h2': {'component': 'lnd', 'frequency': 'month_1'},
-    'clm.h3': {'component': 'lnd', 'frequency': 'day_365'},
-    'clm.h4': {'component': 'lnd', 'frequency': 'day_365'},
-    'clm.h5': {'component': 'lnd', 'frequency': 'day_1'},
-    'clm.h6': {'component': 'lnd', 'frequency': 'day_1'},
-    'clm.h7': {'component': 'lnd', 'frequency': 'hour_3'},
-    'clm.h8': {'component': 'lnd', 'frequency': 'day_1'},
-    'mosart.h0': {'component': 'rof', 'frequency': 'month_1'},
-    'mosart.h1': {'component': 'rof', 'frequency': 'day_1'},
-    'mosart.h2': {'component': 'rof', 'frequency': 'hour_6'},
-    'mosart.h3': {'component': 'rof', 'frequency': 'hour_3'},
-    'rtm.h0': {'component': 'rof', 'frequency': 'month_1'},
-    'rtm.h1': {'component': 'rof', 'frequency': 'day_1'},
-    'pop.h': {'component': 'ocn', 'frequency': 'month_1'},
-    'pop.h.nday1': {'component': 'ocn', 'frequency': 'day_1'},
-    'pop.h.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
-    'pop.h.ecosys': {'component': 'ocn', 'frequency': 'month_1'},
-    'pop.h.ecosys.nday1': {'component': 'ocn', 'frequency': 'day_1'},
-    'pop.h.ecosys.nday5': {'component': 'ocn', 'frequency': 'day_5'},
-    'pop.h.ecosys.nyear1': {'component': 'ocn', 'frequency': 'year_1'},
-    'cice.h': {'component': 'ice', 'frequency': 'month_1'},
-    'cice.h1': {'component': 'ice', 'frequency': 'day_1'},
-    'cism.h': {'component': 'glc', 'frequency': 'year_1'},
-    'cism.h1': {'component': 'glc', 'frequency': 'month_1'},
-    'ww3.h': {'component': 'wav', 'frequency': 'month_1'},
-}
 
+def _read_streams(input_file):
+    with open(input_file) as f:
+        _STREAMS_DICT = yaml.load(f, Loader=yaml.FullLoader)
 
-@dataclasses.dataclass
-class Stream:
-    name: str
-    component: str
-    frequency: str
+    # Setup dataclass for streams
+    @dataclasses.dataclass
+    class Stream:
+        name: str
+        component: str
+        frequency: str
 
+    # Make sure to sort the streams in reverse, the reverse=True is required so as
+    # not to confuse `pop.h` and `pop.h.ecosys.nday1` when looping over
+    # the list of streams in the parsing function
 
-# Make sure to sort the streams in reverse, the reverse=True is required so as
-# not to confuse `pop.h` and `pop.h.ecosys.nday1` when looping over
-# the list of streams in the parsing function
+    cesm_streams = [
+        Stream(name=key, component=value['component'], frequency=value['default_frequency'])
+        for key, value in sorted(_STREAMS_DICT.items(), reverse=True)
+    ]
 
-CESM_STREAMS = [
-    Stream(name=key, component=value['component'], frequency=value['frequency'])
-    for key, value in sorted(_STREAMS_DICT.items(), reverse=True)
-]
+    return cesm_streams
 
 
 def parse_date(date):
@@ -83,11 +50,13 @@ def parse_date(date):
     return date
 
 
-def parse_cesm_history(file):
+def parse_cesm_history(file, stream_info='stream_defaults.yaml'):
     file = pathlib.Path(file)
     info = {}
+    # Read in the stream information
+    cesm_streams = _read_streams(stream_info)
     try:
-        for stream in CESM_STREAMS:
+        for stream in cesm_streams:
             extracted_stream = extract_attr_with_regex(file.stem.lower(), stream.name.lower())
             if extracted_stream:
                 info['component'] = stream.component
@@ -131,12 +100,14 @@ def parse_cesm_history(file):
         return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
 
 
-def parse_cesm_timeseries(file, frequency_dict=None):
+def parse_cesm_timeseries(file, stream_info='stream_defaults.yaml'):
     """Parser for CESM Timeseries files"""
     file = pathlib.Path(file)
     info = {}
+    # Read in the stream information
+    cesm_streams = _read_streams(stream_info)
     try:
-        for stream in CESM_STREAMS:
+        for stream in cesm_streams:
             extracted_stream = extract_attr_with_regex(file.stem.lower(), stream.name.lower())
             if extracted_stream:
                 info['component'] = stream.component
@@ -181,12 +152,6 @@ def parse_cesm_timeseries(file, frequency_dict=None):
 
             except (KeyError, AttributeError):
                 warnings.warn('Using the default frequency definitions')
-
-                if frequency_dict:
-                    info['frequency'] = frequency_dict[stream.name]
-
-                else:
-                    info['frequency'] = stream.frequency
 
             info['path'] = str(file)
         return info
