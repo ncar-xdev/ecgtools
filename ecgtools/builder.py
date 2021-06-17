@@ -70,9 +70,6 @@ class Builder:
     exclude_patterns : list, optional
         Directory, file patterns to exclude during catalog generation.
         These could be substring or regular expressions. by default None
-    parsing_func : callable, optional
-        A function that will be called to parse
-        attributes from a given file/filepath, by default None
     njobs : int, optional
         The maximum number of concurrently running jobs,
         by default -1 meaning all CPUs are used.
@@ -161,13 +158,17 @@ class Builder:
 
     def build(
         self,
-        parsing_func: typing.Callable = None,
+        parsing_func: typing.Callable,
         parsing_func_kwargs: dict = None,
         postprocess_func: typing.Callable = None,
     ):
         """Collect a list of files and harvest attributes from them.
         Parameters
         ----------
+        parsing_func : callable
+            A function that will be called to parse attributes from a given file/filepath
+        parsing_func_kwargs: dict, optional
+            Additional named arguments passed to `parsing_func`
         postprocess_func: Callable, optional
              A function that will be used to postprocess the built dataframe.
 
