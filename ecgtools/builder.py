@@ -83,7 +83,6 @@ class Builder:
     extension: str = '.nc'
     depth: int = 0
     exclude_patterns: typing.List[str] = None
-    parsing_func: typing.Callable = None
     njobs: int = -1
     INVALID_ASSET: typing.ClassVar[str] = INVALID_ASSET
     TRACEBACK: typing.ClassVar[str] = TRACEBACK
@@ -132,13 +131,22 @@ class Builder:
         self.filelist = list(filelist)
         return self
 
-    def parse(self, parsing_func: typing.Callable = None):
-        func = parsing_func or self.parsing_func
+    def _parse(self, parsing_func, parsing_func_kwargs):
+        func = parsing_func
+        parsing_func_kwargs = {} or parsing_func_kwargs
+        print(parsing_func_kwargs)
         if func is None:
             raise ValueError(f'`parsing_func` must a valid Callable. Got {type(func)}')
-        entries = joblib.Parallel(n_jobs=self.njobs, verbose=5)(
-            joblib.delayed(func)(file) for file in self.filelist
-        )
+        if parsing_func_kwargs == {}:
+            joblib.Parallel(n_jobs=self.njobs, verbose=5)(
+                joblib.delayed(func)(file) for file in self.filelist
+            )
+        else:
+            joblib.Parallel(n_jobs=self.njobs, verbose=5)(
+                joblib.delayed(func)(file, kwarg)
+                for file in self.filelist
+                for kwarg in parsing_func_kwargs
+            )
         self.entries = entries
         self.df = pd.DataFrame(entries)
         return self
@@ -160,7 +168,12 @@ class Builder:
             self.df = df
         return self
 
-    def build(self, postprocess_func: typing.Callable = None):
+    def build(
+        self,
+        parsing_func: typing.Callable = None,
+        parsing_func_kwargs: dict = None,
+        postprocess_func: typing.Callable = None,
+    ):
         """Collect a list of files and harvest attributes from them.
         Parameters
         ----------
@@ -171,7 +184,9 @@ class Builder:
         -------
         `ecgtools.Builder`
         """
-        self.get_directories().get_filelist().parse().clean_dataframe()
+        self.get_directories().get_filelist()._parse(
+            parsing_func, parsing_func_kwargs
+        ).clean_dataframe()
         if postprocess_func:
             self.df = postprocess_func(self.df)
         return self
