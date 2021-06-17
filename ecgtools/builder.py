@@ -131,22 +131,13 @@ class Builder:
         self.filelist = list(filelist)
         return self
 
-    def _parse(self, parsing_func, parsing_func_kwargs):
-        func = parsing_func
-        parsing_func_kwargs = {} or parsing_func_kwargs
-        print(parsing_func_kwargs)
-        if func is None:
-            raise ValueError(f'`parsing_func` must a valid Callable. Got {type(func)}')
-        if parsing_func_kwargs == {}:
-            joblib.Parallel(n_jobs=self.njobs, verbose=5)(
-                joblib.delayed(func)(file) for file in self.filelist
-            )
-        else:
-            joblib.Parallel(n_jobs=self.njobs, verbose=5)(
-                joblib.delayed(func)(file, kwarg)
-                for file in self.filelist
-                for kwarg in parsing_func_kwargs
-            )
+    def _parse(self, parsing_func, parsing_func_kwargs=None):
+        parsing_func_kwargs = {} if parsing_func_kwargs is None else parsing_func_kwargs
+        if parsing_func is None:
+            raise ValueError(f'`parsing_func` must a valid Callable. Got {type(parsing_func)}')
+        entries = joblib.Parallel(n_jobs=self.njobs, verbose=5)(
+            joblib.delayed(parsing_func)(file, **parsing_func_kwargs) for file in self.filelist
+        )
         self.entries = entries
         self.df = pd.DataFrame(entries)
         return self
