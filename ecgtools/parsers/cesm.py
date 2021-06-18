@@ -5,11 +5,9 @@ import warnings
 
 import cf_xarray  # noqa
 import xarray as xr
-import yaml
 
 from ..builder import INVALID_ASSET, TRACEBACK
 from .utilities import extract_attr_with_regex
-
 
 default_streams = {
     'cam.h0': {'component': 'atm', 'frequency': 'month_1'},
@@ -71,15 +69,16 @@ class Stream:
 # not to confuse `pop.h` and `pop.h.ecosys.nday1` when looping over
 # the list of streams in the parsing function
 
+
 def build_stream_list(stream_dict):
-    
+
     cesm_streams = [
-        Stream(name=key, component=value['component'],
-               frequency=value['frequency'])
+        Stream(name=key, component=value['component'], frequency=value['frequency'])
         for key, value in sorted(stream_dict.items(), reverse=True)
     ]
 
     return cesm_streams
+
 
 def parse_date(date):
     def _join(a):
@@ -106,7 +105,7 @@ def parse_cesm_history(file, user_streams_dict={}):
     # Otherwise, use the defaults
     else:
         default_streams
-        
+
     cesm_streams = build_stream_list(default_streams)
     try:
         for stream in cesm_streams:
@@ -157,14 +156,14 @@ def parse_cesm_timeseries(file, user_streams_dict={}):
     """Parser for CESM Timeseries files"""
     file = pathlib.Path(file)
     info = {}
-    
+
     # If there are entries for user_streams, edit the dictionary
     if user_streams_dict:
         default_streams.update(user_streams_dict)
     # Otherwise, use the defaults
     else:
         default_streams
-        
+
     cesm_streams = build_stream_list(default_streams)
     try:
         for stream in cesm_streams:
