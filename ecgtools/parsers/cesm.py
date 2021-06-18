@@ -9,7 +9,7 @@ import xarray as xr
 from ..builder import INVALID_ASSET, TRACEBACK
 from .utilities import extract_attr_with_regex
 
-_STREAMS_DICT = {
+default_streams = {
     'cam.h0': {'component': 'atm', 'frequency': 'month_1'},
     'cam.h1': {'component': 'atm', 'frequency': 'day_1'},
     'cam.h2': {'component': 'atm', 'frequency': 'hour_6'},
@@ -21,6 +21,14 @@ _STREAMS_DICT = {
     'cam.h8': {'component': 'atm', 'frequency': 'day_10'},
     'clm2.h0': {'component': 'lnd', 'frequency': 'month_1'},
     'clm2.h1': {'component': 'lnd', 'frequency': 'day_1'},
+    'clm2.h2': {'component': 'lnd', 'frequency': 'day_1'},
+    'clm2.h3': {'component': 'lnd', 'frequency': 'day_1'},
+    'clm2.h4': {'component': 'lnd', 'frequency': 'day_365'},
+    'clm2.h5': {'component': 'lnd', 'frequency': 'day_365'},
+    'clm2.h6': {'component': 'lnd', 'frequency': 'day_1'},
+    'clm2.h7': {'component': 'lnd', 'frequency': 'hour_6'},
+    'clm2.h8': {'component': 'lnd', 'frequency': 'hour_3'},
+    'clm2.h9': {'component': 'lnd', 'frequency': 'day_1'},
     'clm.h1': {'component': 'lnd', 'frequency': 'month_1'},
     'clm.h2': {'component': 'lnd', 'frequency': 'month_1'},
     'clm.h3': {'component': 'lnd', 'frequency': 'day_365'},
@@ -61,10 +69,15 @@ class Stream:
 # not to confuse `pop.h` and `pop.h.ecosys.nday1` when looping over
 # the list of streams in the parsing function
 
-CESM_STREAMS = [
-    Stream(name=key, component=value['component'], frequency=value['frequency'])
-    for key, value in sorted(_STREAMS_DICT.items(), reverse=True)
-]
+
+def build_stream_list(stream_dict):
+
+    cesm_streams = [
+        Stream(name=key, component=value['component'], frequency=value['frequency'])
+        for key, value in sorted(stream_dict.items(), reverse=True)
+    ]
+
+    return cesm_streams
 
 
 def parse_date(date):
@@ -83,11 +96,19 @@ def parse_date(date):
     return date
 
 
-def parse_cesm_history(file):
+def parse_cesm_history(file, user_streams_dict={}):
     file = pathlib.Path(file)
     info = {}
+    # If there are entries for user_streams, edit the dictionary
+    if user_streams_dict:
+        default_streams.update(user_streams_dict)
+    # Otherwise, use the defaults
+    else:
+        default_streams
+
+    cesm_streams = build_stream_list(default_streams)
     try:
-        for stream in CESM_STREAMS:
+        for stream in cesm_streams:
             extracted_stream = extract_attr_with_regex(file.stem.lower(), stream.name.lower())
             if extracted_stream:
                 info['component'] = stream.component
@@ -131,12 +152,21 @@ def parse_cesm_history(file):
         return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
 
 
-def parse_cesm_timeseries(file, frequency_dict=None):
+def parse_cesm_timeseries(file, user_streams_dict={}):
     """Parser for CESM Timeseries files"""
     file = pathlib.Path(file)
     info = {}
+
+    # If there are entries for user_streams, edit the dictionary
+    if user_streams_dict:
+        default_streams.update(user_streams_dict)
+    # Otherwise, use the defaults
+    else:
+        default_streams
+
+    cesm_streams = build_stream_list(default_streams)
     try:
-        for stream in CESM_STREAMS:
+        for stream in cesm_streams:
             extracted_stream = extract_attr_with_regex(file.stem.lower(), stream.name.lower())
             if extracted_stream:
                 info['component'] = stream.component
@@ -181,12 +211,6 @@ def parse_cesm_timeseries(file, frequency_dict=None):
 
             except (KeyError, AttributeError):
                 warnings.warn('Using the default frequency definitions')
-
-                if frequency_dict:
-                    info['frequency'] = frequency_dict[stream.name]
-
-                else:
-                    info['frequency'] = stream.frequency
 
             info['path'] = str(file)
         return info

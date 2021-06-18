@@ -70,9 +70,6 @@ class Builder:
     exclude_patterns : list, optional
         Directory, file patterns to exclude during catalog generation.
         These could be substring or regular expressions. by default None
-    parsing_func : callable, optional
-        A function that will be called to parse
-        attributes from a given file/filepath, by default None
     njobs : int, optional
         The maximum number of concurrently running jobs,
         by default -1 meaning all CPUs are used.
@@ -83,7 +80,6 @@ class Builder:
     extension: str = '.nc'
     depth: int = 0
     exclude_patterns: typing.List[str] = None
-    parsing_func: typing.Callable = None
     njobs: int = -1
     INVALID_ASSET: typing.ClassVar[str] = INVALID_ASSET
     TRACEBACK: typing.ClassVar[str] = TRACEBACK
@@ -132,12 +128,12 @@ class Builder:
         self.filelist = list(filelist)
         return self
 
-    def parse(self, parsing_func: typing.Callable = None):
-        func = parsing_func or self.parsing_func
-        if func is None:
-            raise ValueError(f'`parsing_func` must a valid Callable. Got {type(func)}')
+    def _parse(self, parsing_func, parsing_func_kwargs=None):
+        parsing_func_kwargs = {} if parsing_func_kwargs is None else parsing_func_kwargs
+        if parsing_func is None:
+            raise ValueError(f'`parsing_func` must a valid Callable. Got {type(parsing_func)}')
         entries = joblib.Parallel(n_jobs=self.njobs, verbose=5)(
-            joblib.delayed(func)(file) for file in self.filelist
+            joblib.delayed(parsing_func)(file, **parsing_func_kwargs) for file in self.filelist
         )
         self.entries = entries
         self.df = pd.DataFrame(entries)
@@ -160,10 +156,19 @@ class Builder:
             self.df = df
         return self
 
-    def build(self, postprocess_func: typing.Callable = None):
+    def build(
+        self,
+        parsing_func: typing.Callable,
+        parsing_func_kwargs: dict = None,
+        postprocess_func: typing.Callable = None,
+    ):
         """Collect a list of files and harvest attributes from them.
         Parameters
         ----------
+        parsing_func : callable
+            A function that will be called to parse attributes from a given file/filepath
+        parsing_func_kwargs: dict, optional
+            Additional named arguments passed to `parsing_func`
         postprocess_func: Callable, optional
              A function that will be used to postprocess the built dataframe.
 
@@ -171,7 +176,9 @@ class Builder:
         -------
         `ecgtools.Builder`
         """
-        self.get_directories().get_filelist().parse().clean_dataframe()
+        self.get_directories().get_filelist()._parse(
+            parsing_func, parsing_func_kwargs
+        ).clean_dataframe()
         if postprocess_func:
             self.df = postprocess_func(self.df)
         return self

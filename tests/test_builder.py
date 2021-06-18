@@ -65,7 +65,7 @@ def test_parse_error():
     b = Builder(sample_data_dir / 'cesm').get_directories().get_filelist()
 
     with pytest.raises(ValueError):
-        b.parse()
+        b._parse(None)
 
 
 @pytest.mark.parametrize(
@@ -81,9 +81,9 @@ def test_build(root_path):
         df['my_column'] = 'test'
         return df
 
-    b = Builder(
-        root_path, exclude_patterns=['*/files/*', '*/latest/*'], parsing_func=parsing_func
-    ).build(postprocess_func=func)
+    b = Builder(root_path, exclude_patterns=['*/files/*', '*/latest/*']).build(
+        parsing_func=parsing_func, postprocess_func=func
+    )
     assert 'my_column' in b.df.columns
     assert b.entries
     assert isinstance(b.entries[0], dict)
@@ -94,7 +94,7 @@ def test_build(root_path):
 def test_parse_invalid_assets():
 
     with pytest.warns(UserWarning):
-        b = Builder(sample_data_dir / 'cesm', parsing_func=parsing_func_errors).build()
+        b = Builder(sample_data_dir / 'cesm').build(parsing_func=parsing_func_errors)
 
     assert not b.invalid_assets.empty
     assert set(b.invalid_assets.columns) == set([Builder.INVALID_ASSET, Builder.TRACEBACK])
@@ -103,7 +103,7 @@ def test_parse_invalid_assets():
 def test_save(tmp_path):
     catalog_file = tmp_path / 'test_catalog.csv'
 
-    b = Builder(sample_data_dir / 'cesm', parsing_func=parsing_func).build()
+    b = Builder(sample_data_dir / 'cesm').build(parsing_func=parsing_func)
     b.save(catalog_file, 'path', 'variable', 'netcdf')
 
     df = pd.read_csv(catalog_file)
