@@ -23,6 +23,7 @@ maxdepth: 1
 caption: Examples
 ---
 notebooks/cmip6-glade.ipynb
+notebooks/cesm1-timeseries-example.ipynb
 ```
 
 ```{toctree}
