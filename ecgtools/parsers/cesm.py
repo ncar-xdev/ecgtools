@@ -211,7 +211,7 @@ def parse_cesm_timeseries(file, user_streams_dict={}):
 
             except (KeyError, AttributeError):
                 warnings.warn('Using the default frequency definitions')
-
+                info['frequency'] = stream.frequency
             info['path'] = str(file)
         return info
 
