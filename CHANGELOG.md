@@ -1,5 +1,31 @@
 # Changelog
 
+## v2021.6.21
+
+([full changelog](https://github.com/NCAR/ecgtools/compare/v2021.6.8...15a09ad7f4732cee1ccb1ee8cf261cf7842b449e))
+
+### Enhancements made
+
+- Add method of specifying streams via yaml [#50](https://github.com/NCAR/ecgtools/pull/50) ([@mgrover1](https://github.com/mgrover1))
+
+### Bugs fixed
+
+- Fix missing frequency in timeseries [#51](https://github.com/NCAR/ecgtools/pull/51) ([@mgrover1](https://github.com/mgrover1))
+
+### Maintenance and upkeep improvements
+
+- Remove duplicate code, fix comment [#48](https://github.com/NCAR/ecgtools/pull/48) ([@mgrover1](https://github.com/mgrover1))
+
+### Documentation improvements
+
+- Add timeseries example [#52](https://github.com/NCAR/ecgtools/pull/52) ([@mgrover1](https://github.com/mgrover1))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/NCAR/ecgtools/graphs/contributors?from=2021-06-08&to=2021-06-21&type=c))
+
+[@andersy005](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Aandersy005+updated%3A2021-06-08..2021-06-21&type=Issues) | [@mgrover1](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Amgrover1+updated%3A2021-06-08..2021-06-21&type=Issues) | [@mnlevy1981](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Amnlevy1981+updated%3A2021-06-08..2021-06-21&type=Issues)
+
 ## v2021.6.8
 
 ([full changelog](https://github.com/NCAR/ecgtools/compare/v2021.6.7...ceb56b149363b4fb1cbef18c5a72796d21c50c96))
