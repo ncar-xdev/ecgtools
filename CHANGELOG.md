@@ -2,7 +2,7 @@
 
 ## v2021.6.21
 
-([full changelog](https://github.com/NCAR/ecgtools/compare/6b1b69c8ce72ac280af23d5b7cdf3f58f6183efc...15a09ad7f4732cee1ccb1ee8cf261cf7842b449e))
+([full changelog](https://github.com/NCAR/ecgtools/compare/v2021.6.8...15a09ad7f4732cee1ccb1ee8cf261cf7842b449e))
 
 ### Enhancements made
 
@@ -22,9 +22,9 @@
 
 ### Contributors to this release
 
-([GitHub contributors page for this release](https://github.com/NCAR/ecgtools/graphs/contributors?from=2021-06-09&to=2021-06-21&type=c))
+([GitHub contributors page for this release](https://github.com/NCAR/ecgtools/graphs/contributors?from=2021-06-08&to=2021-06-21&type=c))
 
-[@andersy005](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Aandersy005+updated%3A2021-06-09..2021-06-21&type=Issues) | [@mgrover1](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Amgrover1+updated%3A2021-06-09..2021-06-21&type=Issues)
+[@andersy005](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Aandersy005+updated%3A2021-06-08..2021-06-21&type=Issues) | [@mgrover1](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Amgrover1+updated%3A2021-06-08..2021-06-21&type=Issues) | [@mnlevy1981](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Amnlevy1981+updated%3A2021-06-08..2021-06-21&type=Issues)
 
 ## v2021.6.8
 
