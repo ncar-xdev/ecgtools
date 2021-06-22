@@ -178,7 +178,12 @@ def parse_cesm_timeseries(file, user_streams_dict={}):
                     continue
 
                 info['case'] = z[0].strip('.')
-                info['member_id'] = int(info['case'].split('.')[-1])
+
+                try:
+                    info['member_id'] = int(info['case'].split('.')[-1])
+
+                except:
+                    info['member_id'] = None
 
                 # Use the last part to get variable and time info
                 date_and_variable = z[-1].split('.')
