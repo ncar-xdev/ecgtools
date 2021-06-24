@@ -117,7 +117,7 @@ class Builder:
             )
 
         def _glob_dir(directory, extension):
-            return sorted(list(directory.rglob(f'*{extension}')))
+            return list(directory.rglob(f'*{extension}'))
 
         filelist = joblib.Parallel(n_jobs=self.njobs, verbose=5)(
             joblib.delayed(_glob_dir)(directory, self.extension) for directory in self.dirs
@@ -125,7 +125,7 @@ class Builder:
         filelist = itertools.chain(*filelist)
         if self.exclude_patterns:
             filelist = list(filter(_filter_files, filelist))
-        self.filelist = list(filelist)
+        self.filelist = sorted(list(filelist))
         return self
 
     def _parse(self, parsing_func, parsing_func_kwargs=None):
