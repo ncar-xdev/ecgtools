@@ -117,7 +117,7 @@ class Builder:
             )
 
         def _glob_dir(directory, extension):
-            return list(directory.rglob(f'*{extension}'))
+            return sorted(list(directory.rglob(f'*{extension}')))
 
         filelist = joblib.Parallel(n_jobs=self.njobs, verbose=5)(
             joblib.delayed(_glob_dir)(directory, self.extension) for directory in self.dirs
