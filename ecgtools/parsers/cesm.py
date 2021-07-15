@@ -180,7 +180,7 @@ def parse_cesm_timeseries(file, user_streams_dict={}):
                 info['case'] = z[0].strip('.')
 
                 try:
-                    info['member_id'] = int(info['case'].split('.')[-1])
+                    info['member_id'] = info['case'].split('.')[-1]
 
                 except:
                     info['member_id'] = None
@@ -253,7 +253,7 @@ def parse_smyle(file):
             inits = z[0].split('-')
             init_year = int(inits[0])
             init_month = int(inits[1])
-            member_id = int(z[-1])
+            member_id = z[-1]
             x = case.split(z[0])[0].strip('.').split('.')
             experiment = x[-2]
             grid = x[-1]
