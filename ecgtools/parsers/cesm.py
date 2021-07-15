@@ -85,7 +85,10 @@ def parse_date(date):
         return ''.join(a)
 
     data = list(str(date))
-    if len(data) == 10:
+
+    if len(data) == 16:
+        return f'{_join(data[:4])}-{_join(data[5:7])}-{_join(data[8:10])}'
+    elif len(data) == 10:
         return f'{_join(data[:4])}-{_join(data[4:6])}-{_join(data[6:8])}T{_join(data[8:])}'
     elif len(data) == 8:
         return f'{_join(data[:4])}-{_join(data[4:6])}-{_join(data[6:])}'
