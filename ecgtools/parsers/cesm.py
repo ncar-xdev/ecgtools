@@ -114,8 +114,14 @@ def parse_cesm_history(file, user_streams_dict={}):
                 info['component'] = stream.component
                 info['stream'] = stream.name
                 z = file.stem.split(extracted_stream)
-                info['case'] = z[0].strip('.')
                 info['date'] = z[-1].strip('.')
+                info['case'] = z[0].strip('.')
+
+                try:
+                    info['member_id'] = info['case'].split('.')[-1]
+
+                except:
+                    info['member_id'] = None
                 break
         with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
             try:
