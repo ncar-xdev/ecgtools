@@ -125,7 +125,7 @@ class Builder:
         filelist = itertools.chain(*filelist)
         if self.exclude_patterns:
             filelist = list(filter(_filter_files, filelist))
-        self.filelist = list(filelist)
+        self.filelist = sorted(list(filelist))
         return self
 
     def _parse(self, parsing_func, parsing_func_kwargs=None):
