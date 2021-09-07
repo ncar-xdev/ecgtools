@@ -1,6 +1,5 @@
 import pathlib
 import traceback
-import warnings
 from datetime import datetime
 
 import xarray as xr
