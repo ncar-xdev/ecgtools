@@ -36,7 +36,7 @@ def parse_amwg_obs(file):
                     'variable': var,
                     'units': units,
                     'long_name': long_name,
-                    'path': str(path),
+                    'path': str(file),
                 }
 
         return info
