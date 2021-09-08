@@ -21,7 +21,7 @@ def parse_amwg_obs(file):
             month_number = int(temporal)
             time_period = 'monthly'
             temporal = datetime(2020, month_number, 1).strftime('%b').upper()
-            
+
         elif temporal == 'ANN':
             time_period = 'annual'
         else:
