@@ -17,10 +17,13 @@ def parse_amwg_obs(file):
         split = stem.split('_')
         source = split[0]
         temporal = split[-2]
-        if len(split[-2]) == 2:
+        if len(temporal) == 2:
             month_number = int(temporal)
             time_period = 'monthly'
             temporal = datetime(2020, month_number, 1).strftime('%b').upper()
+            
+        elif temporal == 'ANN':
+            time_period = 'annual'
         else:
             time_period = 'seasonal'
 
