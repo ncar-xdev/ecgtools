@@ -28,19 +28,15 @@ def parse_amwg_obs(file):
             time_period = 'seasonal'
 
         with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
-            for var in ds:
-                da = ds[var]
-                units = da.units
-                long_name = da.long_name
-                info = {
-                    'source': source,
-                    'temporal': temporal,
-                    'time_period': time_period,
-                    'variable': var,
-                    'units': units,
-                    'long_name': long_name,
-                    'path': str(file),
-                }
+            variable_list = [var for var in ds if 'long_name' in ds[var].attrs]
+
+            info = {
+                'source': source,
+                'temporal': temporal,
+                'time_period': time_period,
+                'variable': variable_list,
+                'path': str(file),
+            }
 
         return info
 
