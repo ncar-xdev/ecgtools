@@ -15,6 +15,7 @@ caption: Using ecgtools
 ---
 installation.md
 notebooks/cesm-history-files.ipynb
+notebooks/building-new-parsers.ipynb
 ```
 
 ```{toctree}
