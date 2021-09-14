@@ -32,6 +32,4 @@ def test_obs_parser(file_path):
 def test_obs_builder(file_directory):
     b = Builder(file_directory)
     b.build(parse_amwg_obs)
-    print(file_directory)
-    print(b.df)
     assert isinstance(b.df, pd.DataFrame)
