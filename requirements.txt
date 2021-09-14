@@ -6,3 +6,4 @@ xarray
 pyyaml
 pydantic
 pandas
+dask
