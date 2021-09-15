@@ -99,7 +99,14 @@ def parse_date(date):
     return date
 
 
-def parse_cesm_history(file, user_streams_dict={}):
+def parse_cesm_history(file, user_streams_dict={}, xarray_open_kwargs=None):
+    """Parser for CESM history files"""
+    _default_kwargs = {'engine': 'netcdf4', 'chunks': {}, 'decode_times': False}
+    if xarray_open_kwargs is None:
+        xarray_open_kwargs = _default_kwargs
+    else:
+        _default_kwargs.update(xarray_open_kwargs)
+
     file = pathlib.Path(file)
     info = {}
     # If there are entries for user_streams, edit the dictionary
@@ -126,7 +133,7 @@ def parse_cesm_history(file, user_streams_dict={}):
                 except:
                     info['member_id'] = None
                 break
-        with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
+        with xr.open_dataset(file, **xarray_open_kwargs) as ds:
             try:
                 time = ds.cf['time'].name
             except KeyError:
@@ -161,8 +168,14 @@ def parse_cesm_history(file, user_streams_dict={}):
         return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
 
 
-def parse_cesm_timeseries(file, user_streams_dict={}):
-    """Parser for CESM Timeseries files"""
+def parse_cesm_timeseries(file, user_streams_dict={}, xarray_open_kwargs=None):
+    """Parser for CESM timeseries files"""
+    _default_kwargs = {'engine': 'netcdf4', 'chunks': {}, 'decode_times': False}
+    if xarray_open_kwargs is None:
+        xarray_open_kwargs = _default_kwargs
+    else:
+        _default_kwargs.update(xarray_open_kwargs)
+
     file = pathlib.Path(file)
     info = {}
 
@@ -204,7 +217,7 @@ def parse_cesm_timeseries(file, user_streams_dict={}):
                 info['end_time'] = parse_date(end_time)
                 info['time_range'] = date_range
                 break
-        with xr.open_dataset(file, chunks={}, decode_times=False) as ds:
+        with xr.open_dataset(file, **xarray_open_kwargs) as ds:
 
             # Get the long name from dataset
             info['long_name'] = ds[info['variable']].attrs.get('long_name')
