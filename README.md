@@ -48,7 +48,7 @@ Similar to [`intake-esm`](https://github.com/intake/intake-esm), this package he
 
 ## Installation
 
-Intake-esm can be installed from PyPI with pip:
+ecgtools can be installed from PyPI with pip:
 
 ```bash
 python -m pip install ecgtools
