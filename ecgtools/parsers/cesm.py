@@ -105,7 +105,7 @@ def parse_cesm_history(file, user_streams_dict={}, xarray_open_kwargs=None):
     if xarray_open_kwargs is None:
         xarray_open_kwargs = _default_kwargs
     else:
-        xarray_open_kwargs.update(_default_kwargs)
+        _default_kwargs.update(xarray_open_kwargs)
 
     file = pathlib.Path(file)
     info = {}
@@ -174,7 +174,8 @@ def parse_cesm_timeseries(file, user_streams_dict={}, xarray_open_kwargs=None):
     if xarray_open_kwargs is None:
         xarray_open_kwargs = _default_kwargs
     else:
-        xarray_open_kwargs.update(_default_kwargs)
+        _default_kwargs.update(xarray_open_kwargs)
+
     file = pathlib.Path(file)
     info = {}
 
