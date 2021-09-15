@@ -102,10 +102,10 @@ def parse_date(date):
 def parse_cesm_history(file, user_streams_dict={}, xarray_open_kwargs=None):
   _default_kwargs = {'engine': 'netcdf4', chunks: {}, decode_times=False}
   if xarray_open_kwargs is None:
-     xarray_open_kwargs = _default_kwargs 
+     xarray_open_kwargs = _default_kwargs
    else:
      xarray_open_kwargs.update(_default_kwargs)
-  
+
     file = pathlib.Path(file)
     info = {}
     # If there are entries for user_streams, edit the dictionary
