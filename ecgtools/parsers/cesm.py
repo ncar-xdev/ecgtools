@@ -100,11 +100,12 @@ def parse_date(date):
 
 
 def parse_cesm_history(file, user_streams_dict={}, xarray_open_kwargs=None):
-  _default_kwargs = {'engine': 'netcdf4', chunks: {}, decode_times=False}
-  if xarray_open_kwargs is None:
-     xarray_open_kwargs = _default_kwargs
-   else:
-     xarray_open_kwargs.update(_default_kwargs)
+    """Parser for CESM history files"""
+    _default_kwargs = {'engine': 'netcdf4', 'chunks': {}, 'decode_times': False}
+    if xarray_open_kwargs is None:
+        xarray_open_kwargs = _default_kwargs
+    else:
+        xarray_open_kwargs.update(_default_kwargs)
 
     file = pathlib.Path(file)
     info = {}
@@ -167,8 +168,13 @@ def parse_cesm_history(file, user_streams_dict={}, xarray_open_kwargs=None):
         return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
 
 
-def parse_cesm_timeseries(file, user_streams_dict={}, xarray_open_engine='netcdf4'):
-    """Parser for CESM Timeseries files"""
+def parse_cesm_timeseries(file, user_streams_dict={}, xarray_open_kwargs=None):
+    """Parser for CESM timeseries files"""
+    _default_kwargs = {'engine': 'netcdf4', 'chunks': {}, 'decode_times': False}
+    if xarray_open_kwargs is None:
+        xarray_open_kwargs = _default_kwargs
+    else:
+        xarray_open_kwargs.update(_default_kwargs)
     file = pathlib.Path(file)
     info = {}
 
@@ -210,7 +216,7 @@ def parse_cesm_timeseries(file, user_streams_dict={}, xarray_open_engine='netcdf
                 info['end_time'] = parse_date(end_time)
                 info['time_range'] = date_range
                 break
-        with xr.open_dataset(file, chunks={}, engine=xarray_open_engine, decode_times=False) as ds:
+        with xr.open_dataset(file, **xarray_open_kwargs) as ds:
 
             # Get the long name from dataset
             info['long_name'] = ds[info['variable']].attrs.get('long_name')
