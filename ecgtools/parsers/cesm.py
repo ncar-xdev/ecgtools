@@ -132,7 +132,7 @@ def parse_cesm_history(file, user_streams_dict={}, xarray_open_kwargs=None):
                 except:
                     info['member_id'] = None
                 break
-        with xr.open_dataset(file, chunks={}, engine=xarray_open_engine, decode_times=False) as ds:
+        with xr.open_dataset(file, **xarray_open_kwargs) as ds:
             try:
                 time = ds.cf['time'].name
             except KeyError:
