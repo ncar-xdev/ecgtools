@@ -60,8 +60,8 @@ class Builder:
 
     Parameters
     ----------
-    root_path : str
-        Path of root directory.
+    root_path : str or list
+        Path(s) of root directory.
     extension : str, optional
         File extension, by default None. If None, the builder will look for files with
         "*.nc" extension.
@@ -76,7 +76,7 @@ class Builder:
 
     """
 
-    root_path: pydantic.DirectoryPath
+    root_path: typing.Union[pydantic.DirectoryPath, typing.List[pydantic.DirectoryPath]]
     extension: str = '.nc'
     depth: int = 0
     exclude_patterns: typing.List[str] = None
@@ -101,7 +101,16 @@ class Builder:
         `ecgtools.Builder`
         """
         pattern = '*/' * (self.depth + 1)
-        dirs = [x for x in self.root_path.glob(pattern) if x.is_dir()]
+
+        if type(self.root_path) is pathlib.PosixPath:
+            dirs = [x for x in self.root_path.glob(pattern) if x.is_dir()]
+
+        elif type(self.root_path) is list:
+            dirs = [x for path in self.root_path for x in path.glob(pattern) if x.is_dir()]
+
+        else:
+            raise ValueError(f'`root_path` must a list or a string. Got {type(self.root_path)}')
+
         if not dirs:
             dirs = [self.root_path]
         self.dirs = dirs
