@@ -102,7 +102,7 @@ class Builder:
         """
         pattern = '*/' * (self.depth + 1)
 
-        if type(self.root_path) is pathlib.PosixPath:
+        if isinstance(self.root_path, pathlib.PosixPath):
             dirs = [x for x in self.root_path.glob(pattern) if x.is_dir()]
 
         elif type(self.root_path) is list:
