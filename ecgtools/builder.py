@@ -108,9 +108,6 @@ class Builder:
         elif type(self.root_path) is list:
             dirs = [x for path in self.root_path for x in path.glob(pattern) if x.is_dir()]
 
-        else:
-            raise ValueError(f'`root_path` must a list or a string. Got {type(self.root_path)}')
-
         if not dirs:
             dirs = [self.root_path]
         self.dirs = dirs
