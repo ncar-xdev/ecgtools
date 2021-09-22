@@ -108,6 +108,9 @@ class Builder:
         elif isinstance(self.root_path, list):
             dirs = [x for path in self.root_path for x in path.glob(pattern) if x.is_dir()]
 
+            if not dirs:
+                dirs = self.root_path
+
         if not dirs:
             dirs = [self.root_path]
         self.dirs = dirs
