@@ -35,6 +35,10 @@ def test_root_path_error():
         sample_data_dir / 'cmip' / 'cmip5',
         sample_data_dir / 'cesm',
         [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
+        [
+            sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'IPSL',
+            sample_data_dir / 'cmip' / 'cmip5' / 'output1' / 'IPSL',
+        ],
     ],
 )
 def test_init(root_path):
@@ -48,6 +52,10 @@ def test_init(root_path):
         sample_data_dir / 'cmip' / 'cmip5',
         sample_data_dir / 'cesm',
         [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
+        [
+            sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'IPSL',
+            sample_data_dir / 'cmip' / 'cmip5' / 'output1' / 'IPSL',
+        ],
     ],
 )
 def test_get_filelist(root_path):
