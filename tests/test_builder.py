@@ -34,6 +34,7 @@ def test_root_path_error():
         sample_data_dir / 'cmip' / 'CMIP6',
         sample_data_dir / 'cmip' / 'cmip5',
         sample_data_dir / 'cesm',
+        [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
     ],
 )
 def test_init(root_path):
@@ -46,6 +47,7 @@ def test_init(root_path):
         sample_data_dir / 'cmip' / 'CMIP6',
         sample_data_dir / 'cmip' / 'cmip5',
         sample_data_dir / 'cesm',
+        [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
     ],
 )
 def test_get_filelist(root_path):
@@ -74,6 +76,7 @@ def test_parse_error():
         sample_data_dir / 'cmip' / 'CMIP6',
         sample_data_dir / 'cmip' / 'cmip5',
         sample_data_dir / 'cesm',
+        [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
     ],
 )
 def test_build(root_path):

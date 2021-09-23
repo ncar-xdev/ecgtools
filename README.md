@@ -41,3 +41,21 @@ See [documentation](https://ecgtools.readthedocs.io) for more information. -->
 [conda-link]: https://anaconda.org/conda-forge/ecgtools
 [license-badge]: https://img.shields.io/github/license/NCAR/ecgtools?style=for-the-badge
 [repo-link]: https://github.com/NCAR/ecgtools
+
+## Motivation
+
+Similar to [`intake-esm`](https://github.com/intake/intake-esm), this package helps with finding, investigating, and loading data. The critical requirement for using [`intake-esm`](https://github.com/intake/intake-esm) is having a data catalog. This package enables you build data catalogs to be read in by [`intake-esm`](https://github.com/intake/intake-esm), which enables a user to easily search, discover, and access datasets they are interested in using.
+
+## Installation
+
+ecgtools can be installed from PyPI with pip:
+
+```bash
+python -m pip install ecgtools
+```
+
+It is also available from conda-forge for conda installations:
+
+```bash
+conda install -c conda-forge ecgtools
+```
