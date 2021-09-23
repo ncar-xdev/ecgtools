@@ -1,5 +1,53 @@
 # Changelog
 
+## v2021.9.23
+
+([full changelog](https://github.com/NCAR/ecgtools/compare/v2021.9.14...c7402b32f5d12b207f76da07c0f417ca404de5c6))
+
+### Enhancements made
+
+- Add fix for preventing nested list [#85](https://github.com/NCAR/ecgtools/pull/85) ([@mgrover1](https://github.com/mgrover1))
+- Allow user to input list of directories for `root_dir` [#83](https://github.com/NCAR/ecgtools/pull/83) ([@mgrover1](https://github.com/mgrover1))
+- Add xarray open kwargs to cesm timeseries and cesm history [#81](https://github.com/NCAR/ecgtools/pull/81) ([@mgrover1](https://github.com/mgrover1))
+- Add observations parser [#65](https://github.com/NCAR/ecgtools/pull/65) ([@mgrover1](https://github.com/mgrover1))
+
+### Maintenance and upkeep improvements
+
+- [pre-commit.ci] pre-commit autoupdate [#84](https://github.com/NCAR/ecgtools/pull/84) ([@pre-commit-ci](https://github.com/pre-commit-ci))
+
+### Documentation improvements
+
+- Fix typo [#78](https://github.com/NCAR/ecgtools/pull/78) ([@andersy005](https://github.com/andersy005))
+- Update README [#77](https://github.com/NCAR/ecgtools/pull/77) ([@mgrover1](https://github.com/mgrover1))
+
+### Contributors to this release
+
+([GitHub contributors page for this release](https://github.com/NCAR/ecgtools/graphs/contributors?from=2021-09-14&to=2021-09-23&type=c))
+
+[@andersy005](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Aandersy005+updated%3A2021-09-14..2021-09-23&type=Issues) | [@mgrover1](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Amgrover1+updated%3A2021-09-14..2021-09-23&type=Issues) | [@mnlevy1981](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Amnlevy1981+updated%3A2021-09-14..2021-09-23&type=Issues) | [@pre-commit-ci](https://github.com/search?q=repo%3ANCAR%2Fecgtools+involves%3Apre-commit-ci+updated%3A2021-09-14..2021-09-23&type=Issues)
+
+## v2021.9.14
+
+### Enhancements made
+
+- Allow `member_id` to be optional (#54) @mgrover1
+- Add an observational parser (#65) @mgrover1
+
+### Bugs Fixed
+
+- Make sure files are sorted when parsing (#57) @mgrover1
+- Update requirements to include Dask (#72) @mgrover1
+
+### Maintenance and upkeep improvements
+
+- Update pre-commit hooks (#62 and #68) @andersy005
+
+### Documentation improvements
+
+- Add docs for building a parser(#69) @mgrover1
+
+@andersy005 | @mgrover1
+
 ## v2021.6.21
 
 ([full changelog](https://github.com/NCAR/ecgtools/compare/v2021.6.8...15a09ad7f4732cee1ccb1ee8cf261cf7842b449e))
