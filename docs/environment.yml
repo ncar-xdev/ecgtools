@@ -3,18 +3,19 @@ channels:
   - conda-forge
   - nodefaults
 dependencies:
-  - sphinx-book-theme
-  - xarray
-  - joblib
-  - pydantic
-  - netcdf4
   - cf_xarray
+  - furo
+  - joblib
   - jupyterlab
   - myst-nb
-  - sphinx-copybutton
+  - netcdf4
   - pip
+  - pydantic
+  - sphinx-copybutton
+  - sphinx-inline-tabs
+  - xarray
   - pip:
       - sphinxext-opengraph
-      - sphinx-comments
+      - autodoc_pydantic
       - -r ../requirements.txt
       - -e ..
