@@ -11,27 +11,32 @@ If you encounter any errors or problems with **ecgtools**, please open an issue 
 ```{toctree}
 ---
 maxdepth: 1
-caption: Using ecgtools
+hidden:
 ---
+
+tutorials/index.md
+how-to/index.md
+explanation/index.md
+reference/index.md
+
+```
+
 installation.md
 notebooks/cesm-history-files.ipynb
 notebooks/building-new-parsers.ipynb
-```
+
+notebooks/cmip6-glade.ipynb
+notebooks/cesm1-timeseries-example.ipynb
 
 ```{toctree}
 ---
 maxdepth: 1
-caption: Examples
+caption: Contribute to ecgtools
+hidden:
 ---
-notebooks/cmip6-glade.ipynb
-notebooks/cesm1-timeseries-example.ipynb
-```
 
-```{toctree}
----
-maxdepth: 2
-caption: Reference
----
-api.rst
+contributing.md
 changelog.md
+GitHub Repo <https://github.com/NCAR/ecgtools>
+GitHub discussions <https://github.com/NCAR/ecgtools/discussions>
 ```
