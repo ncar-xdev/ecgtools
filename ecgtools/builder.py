@@ -55,8 +55,7 @@ class ESMCollection(pydantic.BaseModel):
 
 @pydantic.dataclasses.dataclass
 class Builder:
-    """
-    Generates a catalog from a list of files.
+    """Generates a catalog from a list of files.
 
     Parameters
     ----------
@@ -64,7 +63,7 @@ class Builder:
         Path(s) of root directory.
     extension : str, optional
         File extension, by default None. If None, the builder will look for files with
-        "*.nc" extension.
+        `*.nc` extension.
     depth : int, optional
         Recursion depth. Recursively crawl `root_path` up to a specified depth, by default 0
     exclude_patterns : list, optional
@@ -236,8 +235,9 @@ class Builder:
         use_relative_path: bool
             Whether to use a relative path for the catalog file (csv file)
             entry in the json file, default True
-        kwargs : Additional keyword arguments are passed through to the
-                 :py:class:`~pandas.DataFrame.to_csv` method.
+        kwargs : dict
+            Additional keyword arguments are passed through to the
+            :py:meth:`~pandas.DataFrame.to_csv` method.
 
         Returns
         -------
