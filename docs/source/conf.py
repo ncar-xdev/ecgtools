@@ -36,7 +36,7 @@ copybutton_prompt_is_regexp = True
 autodoc_pydantic_model_show_json = True
 autodoc_pydantic_settings_show_json = False
 
-jupyter_execute_notebooks = 'cache'
+jupyter_execute_notebooks = 'off'
 execution_timeout = 600
 execution_allow_errors = True
 

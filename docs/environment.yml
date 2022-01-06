@@ -1,4 +1,4 @@
-name: ecgtools-docs
+name: ecgtools-dev
 channels:
   - conda-forge
   - nodefaults
