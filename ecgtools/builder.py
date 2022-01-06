@@ -92,8 +92,7 @@ class Builder:
         self.entries = None
 
     def get_directories(self):
-        """
-        Walk `root_path`'s subdirectories and returns a list of directories
+        """Walk `root_path`'s subdirectories and returns a list of directories
         up to the specified depth from `root_path`.
 
         Returns
@@ -152,6 +151,7 @@ class Builder:
         return self
 
     def clean_dataframe(self):
+        """Clean the dataframe by excluding invalid assets and removing duplicate entries."""
         if self.INVALID_ASSET in self.df.columns:
             invalid_assets = self.df[self.df[self.INVALID_ASSET].notnull()][
                 [self.INVALID_ASSET, self.TRACEBACK]
@@ -175,6 +175,7 @@ class Builder:
         postprocess_func: typing.Callable = None,
     ):
         """Collect a list of files and harvest attributes from them.
+
         Parameters
         ----------
         parsing_func : callable
@@ -245,7 +246,7 @@ class Builder:
         Notes
         -----
         See https://github.com/NCAR/esm-collection-spec/blob/master/collection-spec/collection-spec.md
-        for mor
+        for more
 
         """
         last_updated = last_updated or datetime.datetime.now().utcnow().strftime(
