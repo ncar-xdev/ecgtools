@@ -4,12 +4,10 @@ channels:
   - nodefaults
 dependencies:
   - cf_xarray
-  - codecov
+  - fsspec
   - intake-esm
   - joblib
-  - nbsphinx
   - netcdf4
-  - numpydoc
   - pip
   - pre-commit
   - pydantic
@@ -18,5 +16,6 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - pyyaml
-  - typer
   - xarray
+  - gcsfs
+  - s3fs
