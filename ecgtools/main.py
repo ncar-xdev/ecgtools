@@ -72,10 +72,10 @@ class Directory(pydantic.BaseModel):
 
 @pydantic.dataclasses.dataclass
 class Builder:
-    paths: list[str]
+    paths: typing.List[str]
     storage_options: typing.Dict[typing.Any, typing.Any] = None
     depth: int = 0
-    exclude_patterns: list[str] = None
+    exclude_patterns: typing.List[str] = None
     joblib_parallel_kwargs: typing.Dict[str, typing.Any] = None
 
     def __post_init_post_parse__(self):
