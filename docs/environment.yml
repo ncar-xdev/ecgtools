@@ -4,13 +4,16 @@ channels:
   - nodefaults
 dependencies:
   - cf_xarray
+  - fsspec
   - furo
+  - gcsfs
   - joblib
   - jupyterlab
   - myst-nb
   - netcdf4
   - pip
   - pydantic
+  - s3fs
   - sphinx-copybutton
   - sphinx-inline-tabs
   - xarray
@@ -18,4 +21,5 @@ dependencies:
       - sphinxext-opengraph
       - autodoc_pydantic
       - -r ../requirements.txt
+      - git+https://github.com/intake/intake-esm
       - -e ..

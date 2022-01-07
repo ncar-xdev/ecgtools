@@ -6,4 +6,4 @@ pyyaml
 pydantic
 pandas
 fsspec
-git+https://github.com/intake/intake-esm
+intake-esm

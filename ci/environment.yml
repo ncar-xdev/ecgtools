@@ -5,6 +5,7 @@ channels:
 dependencies:
   - cf_xarray
   - fsspec
+  - gcsfs
   - intake-esm
   - joblib
   - netcdf4
@@ -16,6 +17,7 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - pyyaml
-  - xarray
-  - gcsfs
   - s3fs
+  - xarray
+  - pip:
+      - git+https://github.com/intake/intake-esm
