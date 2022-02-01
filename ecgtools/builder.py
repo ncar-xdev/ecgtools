@@ -141,8 +141,13 @@ class Builder:
         parsing_func: typing.Callable,
         parsing_func_kwargs: dict = None,
         postprocess_func: typing.Callable = None,
+        postprocess_func_kwargs: dict = None,
     ):
         self.get_assets().parse(
             parsing_func=parsing_func, parsing_func_kwargs=parsing_func_kwargs
         ).clean()
+
+        if postprocess_func:
+            postprocess_func_kwargs = postprocess_func_kwargs or {}
+            self.df = postprocess_func(self.df, **postprocess_func_kwargs)
         return self

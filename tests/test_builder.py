@@ -1,6 +1,7 @@
 import os
 import pathlib
 
+import pandas as pd
 import pytest
 
 from ecgtools import Builder, RootDirectory, glob_to_regex
@@ -9,19 +10,23 @@ sample_data_dir = pathlib.Path(os.path.dirname(__file__)).parent / 'sample_data'
 
 
 @pytest.mark.parametrize(
-    'path, depth, include_patterns, exclude_patterns, num_assets',
+    'path, depth, storage_options,include_patterns, exclude_patterns, num_assets',
     [
-        (str(sample_data_dir / 'cmip' / 'CMIP6'), 10, ['*.nc'], [], 59),
-        (str(sample_data_dir / 'cmip' / 'cmip5'), 10, ['*.nc'], ['*/esmControl/*'], 27),
-        ('s3://ncar-cesm-lens/atm/monthly', 0, [], ['*cesmLE-20C*'], 75),
+        (str(sample_data_dir / 'cmip' / 'CMIP6'), 10, {}, ['*.nc'], [], 59),
+        (str(sample_data_dir / 'cmip' / 'cmip5'), 10, {}, ['*.nc'], ['*/esmControl/*'], 27),
+        ('s3://ncar-cesm-lens/atm/monthly', 0, {'anon': True}, [], ['*cesmLE-20C*'], 75),
     ],
 )
-def test_directory(path, depth, include_patterns, exclude_patterns, num_assets):
+def test_directory(path, depth, storage_options, include_patterns, exclude_patterns, num_assets):
     include_regex, exclude_regex = glob_to_regex(
         include_patterns=include_patterns, exclude_patterns=exclude_patterns
     )
     directory = RootDirectory(
-        path=path, depth=depth, include_regex=include_regex, exclude_regex=exclude_regex
+        path=path,
+        depth=depth,
+        storage_options=storage_options,
+        include_regex=include_regex,
+        exclude_regex=exclude_regex,
     )
     assets = directory.walk()
     assert len(assets) == num_assets
@@ -64,3 +69,58 @@ def test_builder_init(
     builder.get_assets()
     assert isinstance(builder.assets, list)
     assert len(builder.assets) == num_assets
+
+
+def parsing_func(file):
+    return {'path': file, 'variable': 'placeholder'}
+
+
+def post_process_func(df, times=10):
+    df['my_column'] = 1 * times
+    return df
+
+
+@pytest.mark.parametrize(
+    'paths, depth, storage_options, include_patterns, exclude_patterns, num_assets',
+    [
+        (
+            [
+                str(sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'BCC'),
+                str(sample_data_dir / 'cesm'),
+            ],
+            1,
+            {},
+            ['*.nc'],
+            [],
+            3,
+        ),
+        (
+            ['s3://ncar-cesm-lens/lnd/static', 's3://ncar-cesm-lens/ocn/static'],
+            0,
+            {'anon': True},
+            [],
+            ['*cesmLE-20C*', '*cesmLE-RCP85*'],
+            4,
+        ),
+    ],
+)
+def test_builder_build(
+    paths, depth, storage_options, include_patterns, exclude_patterns, num_assets
+):
+    builder = Builder(
+        paths=paths,
+        depth=depth,
+        storage_options=storage_options,
+        include_patterns=include_patterns,
+        exclude_patterns=exclude_patterns,
+    )
+    builder.get_assets()
+    assert len(builder.assets) == num_assets
+    builder.build(
+        parsing_func=parsing_func,
+        postprocess_func=post_process_func,
+        postprocess_func_kwargs={'times': 100},
+    )
+    assert isinstance(builder.df, pd.DataFrame)
+    assert len(builder.df) == num_assets
+    assert set(builder.df.columns) == {'path', 'variable', 'my_column'}
