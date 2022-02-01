@@ -9,6 +9,14 @@ import joblib
 import pandas as pd
 import pydantic
 import toolz
+from intake_esm.cat import (
+    Aggregation,
+    AggregationControl,
+    Assets,
+    Attribute,
+    DataFormat,
+    ESMCatalogModel,
+)
 
 INVALID_ASSET = 'INVALID_ASSET'
 TRACEBACK = 'TRACEBACK'
@@ -56,7 +64,10 @@ class RootDirectory(pydantic.BaseModel):
 
             if files:
                 # exclude/include assets
-                files = [os.path.join(root, file) for file in files]
+                if self.protocol != 'file':
+                    files = [f'{self.protocol}://{os.path.join(root, file)}' for file in files]
+                else:
+                    files = [os.path.join(root, file) for file in files]
                 files = [file for file in files if not re.match(self.exclude_regex, file)]
                 files = [file for file in files if re.match(self.include_regex, file)]
                 all_assets.extend(files)
@@ -65,7 +76,10 @@ class RootDirectory(pydantic.BaseModel):
             # print(all_assets)
             for directory in dirs:
                 if self.mapper.fs.exists(f'{directory}/.zmetadata'):
-                    all_assets.append(directory)
+                    path = (
+                        f'{self.protocol}://{directory}' if self.protocol != 'file' else directory
+                    )
+                    all_assets.append(path)
 
         return all_assets
 
@@ -151,3 +165,93 @@ class Builder:
             postprocess_func_kwargs = postprocess_func_kwargs or {}
             self.df = postprocess_func(self.df, **postprocess_func_kwargs)
         return self
+
+    @pydantic.validate_arguments
+    def save(
+        self,
+        name: str,
+        *,
+        path_column_name: str,
+        variable_column_name: str,
+        data_format: DataFormat,
+        groupby_attrs: typing.List[str] = None,
+        aggregations: typing.List[Aggregation] = None,
+        esmcat_version: str = '0.0.1',
+        description: str = None,
+        directory: str = None,
+        catalog_type: str = 'file',
+        to_csv_kwargs: dict = None,
+        json_dump_kwargs: dict = None,
+    ):
+        """Persist catalog contents to files.
+
+        Parameters
+        ----------
+        name: str
+            The name of the file to save the catalog to.
+        path_column_name : str
+           The name of the column containing the path to the asset.
+           Must be in the header of the CSV file.
+        variable_column_name : str
+            Name of the attribute column in csv file that contains the variable name.
+        data_format : str
+            The data format. Valid values are netcdf and zarr.
+        aggregations : List[dict]
+            List of aggregations to apply to query results, default None
+        esmcat_version : str
+            The ESM Catalog version the collection implements, default None
+        description : str
+            Detailed multi-line description to fully explain the collection,
+            default None
+        directory: str
+            The directory to save the catalog to. If None, use the current directory
+        catalog_type: str
+            The type of catalog to save. Whether to save the catalog table as a dictionary
+            in the JSON file or as a separate CSV file. Valid options are 'dict' and 'file'.
+        to_csv_kwargs : dict, optional
+            Additional keyword arguments passed through to the :py:meth:`~pandas.DataFrame.to_csv` method.
+        json_dump_kwargs : dict, optional
+            Additional keyword arguments passed through to the :py:func:`~json.dump` function.
+
+
+        Returns
+        -------
+        :py:class:`~ecgtools.Builder`
+            The builder object.
+
+        Notes
+        -----
+        See https://github.com/NCAR/esm-collection-spec/blob/master/collection-spec/collection-spec.md
+        for more
+        """
+
+        for col in {variable_column_name, path_column_name}.union(set(groupby_attrs or [])):
+            assert col in self.df.columns, f'{col} must be a column in the dataframe.'
+
+        attributes = [Attribute(column_name=column, vocabulary='') for column in self.df.columns]
+
+        _aggregation_control = AggregationControl(
+            variable_column_name=variable_column_name,
+            groupby_attrs=groupby_attrs,
+            aggregations=aggregations,
+        )
+
+        cat = ESMCatalogModel(
+            esmcat_version=esmcat_version,
+            description=description,
+            attributes=attributes,
+            aggregation_control=_aggregation_control,
+            assets=Assets(column_name=path_column_name, format=data_format),
+        )
+
+        cat._df = self.df
+
+        cat.save(
+            name=name,
+            directory=directory,
+            catalog_type=catalog_type,
+            to_csv_kwargs=to_csv_kwargs,
+            json_dump_kwargs=json_dump_kwargs,
+        )
+
+        return cat

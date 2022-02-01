@@ -1,6 +1,7 @@
 import os
 import pathlib
 
+import intake
 import pandas as pd
 import pytest
 
@@ -124,3 +125,21 @@ def test_builder_build(
     assert isinstance(builder.df, pd.DataFrame)
     assert len(builder.df) == num_assets
     assert set(builder.df.columns) == {'path', 'variable', 'my_column'}
+
+
+def test_builder_save(tmp_path):
+    builder = Builder(
+        paths=[str(sample_data_dir / 'cesm')], depth=5, include_patterns=['*.nc']
+    ).build(parsing_func=parsing_func)
+    builder.save(
+        name='test',
+        path_column_name='path',
+        directory=str(tmp_path),
+        data_format='netcdf',
+        variable_column_name='variable',
+        aggregations=[],
+        groupby_attrs=[],
+    )
+
+    cat = intake.open_esm_datastore(str(tmp_path / 'test.json'))
+    assert isinstance(cat.df, pd.DataFrame)
