@@ -87,6 +87,25 @@ class RootDirectory(pydantic.BaseModel):
 
 @pydantic.dataclasses.dataclass
 class Builder:
+    """Generates a catalog from a list of netCDF files or zarr stores
+
+    Parameters
+    ----------
+    paths : list of str
+        List of paths to crawl for assets/files.
+    storage_options : dict, optional
+        Parameters passed to the backend file-system such as Google Cloud Storage,
+        Amazon Web Service S3
+    depth : int, optional
+        Maximum depth to crawl for assets. Default is 0.
+    exclude_patterns : list of str, optional
+        List of glob patterns to exclude from crawling.
+    include_patterns : list of str, optional
+        List of glob patterns to include from crawling.
+    joblib_parallel_kwargs : dict, optional
+        Parameters passed to joblib.Parallel. Default is {}.
+    """
+
     paths: typing.List[str]
     storage_options: typing.Dict[typing.Any, typing.Any] = None
     depth: int = 0
@@ -158,6 +177,26 @@ class Builder:
         postprocess_func: typing.Callable = None,
         postprocess_func_kwargs: dict = None,
     ):
+        """Builds a catalog from a list of netCDF files or zarr stores.
+
+        Parameters
+        ----------
+        parsing_func : callable
+            Function that parses the asset and returns a dictionary of metadata.
+        parsing_func_kwargs : dict, optional
+            Parameters passed to the parsing function. Default is {}.
+        postprocess_func : callable, optional
+            Function that post-processes the built dataframe and returns a pandas dataframe.
+            Default is None.
+        postprocess_func_kwargs : dict, optional
+            Parameters passed to the post-processing function. Default is {}.
+
+        Returns
+        -------
+        :py:class:`~ecgtools.Builder`
+            The builder object.
+
+        """
         self.get_assets().parse(
             parsing_func=parsing_func, parsing_func_kwargs=parsing_func_kwargs
         ).clean()
