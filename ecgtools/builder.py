@@ -1,6 +1,7 @@
 import fnmatch
 import os.path
 import re
+import tempfile
 import typing
 import warnings
 
@@ -254,4 +255,10 @@ class Builder:
             json_dump_kwargs=json_dump_kwargs,
         )
 
-        return cat
+        if not self.invalid_assets.empty:
+            invalid_assets_report_file = f'{tempfile.gettempdir()}/{name}_invalid_assets.csv'
+            warnings.warn(
+                f'Unable to parse {len(self.invalid_assets)} assets/files. A list of these assets can be found in {invalid_assets_report_file}.',
+                stacklevel=2,
+            )
+            self.invalid_assets.to_csv(invalid_assets_report_file, index=False)
