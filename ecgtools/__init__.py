@@ -3,7 +3,7 @@
 """Top-level module for ecgtools ."""
 from pkg_resources import DistributionNotFound, get_distribution
 
-from .builder import Builder
+from .builder import Builder, RootDirectory, glob_to_regex
 
 try:
     __version__ = get_distribution(__name__).version
