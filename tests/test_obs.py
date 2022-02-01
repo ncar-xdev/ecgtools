@@ -26,10 +26,10 @@ def test_obs_parser(file_path):
 
 
 @pytest.mark.parametrize(
-    'file_directory',
-    [sample_data_dir / 'cesm_obs'],
+    'paths',
+    [[str(sample_data_dir / 'cesm_obs')]],
 )
-def test_obs_builder(file_directory):
-    b = Builder(file_directory)
-    b.build(parse_amwg_obs)
+def test_obs_builder(paths):
+    b = Builder(paths=paths)
+    b.build(parsing_func=parse_amwg_obs)
     assert isinstance(b.df, pd.DataFrame)

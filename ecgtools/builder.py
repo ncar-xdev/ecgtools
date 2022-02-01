@@ -115,7 +115,7 @@ class Builder:
 
         parsing_func_kwargs = {} if parsing_func_kwargs is None else parsing_func_kwargs
         entries = joblib.Parallel(**self.joblib_parallel_kwargs)(
-            joblib.delayed(parsing_func)(asset, **parsing_func_kwargs) for asset in self.asset_list
+            joblib.delayed(parsing_func)(asset, **parsing_func_kwargs) for asset in self.assets
         )
         self.entries = entries
         self.df = pd.DataFrame(entries)
