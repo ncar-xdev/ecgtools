@@ -7,9 +7,7 @@ import pytest
 from ecgtools import Builder
 from ecgtools.parsers.observations import parse_amwg_obs
 
-sample_data_dir = pathlib.Path(os.path.dirname(__file__)).parent / 'sample_data'
-
-df = pd.DataFrame()
+sample_data_dir = pathlib.Path(os.path.dirname(__file__)).parent.parent / 'sample_data'
 
 
 @pytest.mark.parametrize(
@@ -20,9 +18,9 @@ df = pd.DataFrame()
     ],
 )
 def test_obs_parser(file_path):
-    parse_dict = parse_amwg_obs(file_path)
-    assert isinstance(parse_dict, dict)
-    assert isinstance(df.append(parse_dict, ignore_index=True), pd.DataFrame)
+    parsed_dict = parse_amwg_obs(file_path)
+    assert isinstance(parsed_dict, dict)
+    assert 'path' in parsed_dict
 
 
 @pytest.mark.parametrize(
