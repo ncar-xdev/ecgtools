@@ -36,11 +36,11 @@ setup(
     name='ecgtools',
     packages=find_packages(include=['ecgtools', 'ecgtools.*']),
     entry_points={},
-    url='https://github.com/NCAR/ecgtools',
+    url='https://github.com/ncar-xdev/ecgtools',
     project_urls={
-        'Documentation': 'https://github.com/NCAR/ecgtools',
-        'Source': 'https://github.com/NCAR/ecgtools',
-        'Tracker': 'https://github.com/NCAR/ecgtools/issues',
+        'Documentation': 'https://github.com/ncar-xdev/ecgtools',
+        'Source': 'https://github.com/ncar-xdev/ecgtools',
+        'Tracker': 'https://github.com/ncar-xdev/ecgtools/issues',
     },
     use_scm_version={
         'version_scheme': 'post-release',

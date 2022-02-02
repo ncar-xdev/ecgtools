@@ -15,7 +15,7 @@ concurrency:
 jobs:
   build:
     name: python-${{ matrix.python-version }}
-    if: github.repository == 'NCAR/ecgtools'
+    if: github.repository == 'ncar-xdev/ecgtools'
     runs-on: ubuntu-latest
     defaults:
       run:
