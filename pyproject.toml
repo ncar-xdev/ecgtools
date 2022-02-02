@@ -2,3 +2,6 @@
 line-length = 100
 target-version = ['py38']
 skip-string-normalization = true
+
+[build-system]
+requires = ["setuptools>=45", "wheel", "setuptools_scm>=6.2"]
