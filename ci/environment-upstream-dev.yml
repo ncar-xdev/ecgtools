@@ -1,0 +1,25 @@
+name: ecgtools-dev
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - cf_xarray
+  - codecov
+  - intake-esm
+  - joblib
+  - nbsphinx
+  - netcdf4
+  - numpydoc
+  - pip
+  - pre-commit
+  - pydantic
+  - pytest
+  - pytest-cov
+  - pytest-sugar
+  - pytest-xdist
+  - pyyaml
+  - typer
+  - xarray
+  - pip:
+      - git+https://github.com/xarray-contrib/cf-xarray
+      - git+https://github.com/intake/intake-esm

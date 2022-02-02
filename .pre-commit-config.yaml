@@ -1,4 +1,3 @@
-exclude: schema/generic_schema.yaml
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.1.0
@@ -9,11 +8,21 @@ repos:
       - id: check-json
       - id: check-yaml
       - id: double-quote-string-fixer
+      - id: debug-statements
+      - id: mixed-line-ending
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.31.0
+    hooks:
+      - id: pyupgrade
+        args:
+          - '--py37-plus'
 
   - repo: https://github.com/psf/black
-    rev: 21.12b0
+    rev: 22.1.0
     hooks:
       - id: black-jupyter
+      - id: black
 
   - repo: https://github.com/keewis/blackdoc
     rev: v0.3.4

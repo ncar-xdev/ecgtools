@@ -1,8 +1,9 @@
-name: Build and Upload ecgtools to PyPI
+name: Build distribution
 on:
   release:
     types:
       - published
+  push:
 
 jobs:
   build-artifacts:
@@ -60,6 +61,13 @@ jobs:
           ls -ltrh
           ls -ltrh dist
 
+      - name: Verify the built dist/wheel is valid
+        if: github.event_name == 'push'
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install dist/ecgtools*.whl
+          python -c "import ecgtools; print(ecgtools.__version__)"
+
   upload-to-pypi:
     needs: test-built-dist
     if: github.event_name == 'release'
@@ -70,7 +78,7 @@ jobs:
           name: releases
           path: dist
       - name: Publish package to PyPI
-        uses: pypa/gh-action-pypi-publish@v1.4.2
+        uses: pypa/gh-action-pypi-publish@v1.5.0
         with:
           user: __token__
           password: ${{ secrets.PYPI_TOKEN }}
