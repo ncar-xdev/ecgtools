@@ -6,6 +6,7 @@ import pandas as pd
 import pytest
 
 from ecgtools import Builder, RootDirectory, glob_to_regex
+from ecgtools.parsers.cesm import parse_cesm_history
 
 sample_data_dir = pathlib.Path(os.path.dirname(__file__)).parent / 'sample_data'
 
@@ -128,18 +129,22 @@ def test_builder_build(
 
 
 def test_builder_save(tmp_path):
-    builder = Builder(
-        paths=[str(sample_data_dir / 'cesm')], depth=5, include_patterns=['*.nc']
-    ).build(parsing_func=parsing_func)
-    builder.save(
-        name='test',
-        path_column_name='path',
-        directory=str(tmp_path),
-        data_format='netcdf',
-        variable_column_name='variable',
-        aggregations=[],
-        groupby_attrs=[],
-    )
+    builder = Builder(paths=[str(sample_data_dir / 'cesm')], depth=5, include_patterns=['*.nc'])
+    builder.get_assets()
+    builder.assets.append('cesm/nonexistent_file.nc')  # Add an invalid file
 
+    with pytest.warns(UserWarning):
+        builder.parse(parsing_func=parse_cesm_history).clean_dataframe()
+    with pytest.warns(UserWarning):
+        builder.save(
+            name='test',
+            path_column_name='path',
+            directory=str(tmp_path),
+            data_format='netcdf',
+            variable_column_name='variables',
+            aggregations=[],
+            groupby_attrs=[],
+        )
+    assert not builder.invalid_assets.empty
     cat = intake.open_esm_datastore(str(tmp_path / 'test.json'))
     assert isinstance(cat.df, pd.DataFrame)

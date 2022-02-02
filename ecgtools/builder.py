@@ -156,14 +156,15 @@ class Builder:
         self.df = pd.DataFrame(entries)
         return self
 
-    def clean(self):
+    def clean_dataframe(self):
+        """Clean the dataframe by excluding invalid assets and removing duplicate entries."""
         if INVALID_ASSET in self.df.columns:
             invalid_assets = self.df[self.df[INVALID_ASSET].notnull()][[INVALID_ASSET, TRACEBACK]]
             df = self.df[self.df[INVALID_ASSET].isnull()].drop(columns=[INVALID_ASSET, TRACEBACK])
             self.invalid_assets = invalid_assets
             if not self.invalid_assets.empty:
                 warnings.warn(
-                    f'Unable to parse {len(self.invalid_assets)} assets/assets. A list of these assets can be found in `.invalid_assets` attribute.',
+                    f'Unable to parse {len(self.invalid_assets)} assets. A list of these assets can be found in `.invalid_assets` attribute.',
                     stacklevel=2,
                 )
             self.df = df
@@ -200,7 +201,7 @@ class Builder:
         """
         self.get_assets().parse(
             parsing_func=parsing_func, parsing_func_kwargs=parsing_func_kwargs
-        ).clean()
+        ).clean_dataframe()
 
         if postprocess_func:
             postprocess_func_kwargs = postprocess_func_kwargs or {}
@@ -210,8 +211,8 @@ class Builder:
     @pydantic.validate_arguments
     def save(
         self,
-        name: str,
         *,
+        name: str,
         path_column_name: str,
         variable_column_name: str,
         data_format: DataFormat,
