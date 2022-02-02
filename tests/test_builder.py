@@ -108,7 +108,7 @@ def test_parse_invalid_assets():
         b = Builder(sample_data_dir / 'cesm').build(parsing_func=parsing_func_errors)
 
     assert not b.invalid_assets.empty
-    assert set(b.invalid_assets.columns) == set([Builder.INVALID_ASSET, Builder.TRACEBACK])
+    assert set(b.invalid_assets.columns) == {Builder.INVALID_ASSET, Builder.TRACEBACK}
 
 
 def test_save(tmp_path):
@@ -123,6 +123,6 @@ def test_save(tmp_path):
 
     json_path = tmp_path / 'test_catalog.json'
     data = json.load(json_path.open())
-    assert set(['catalog_file', 'assets', 'aggregation_control', 'attributes']).issubset(
+    assert {'catalog_file', 'assets', 'aggregation_control', 'attributes'}.issubset(
         set(data.keys())
     )
