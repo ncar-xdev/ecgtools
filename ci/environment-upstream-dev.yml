@@ -5,6 +5,8 @@ channels:
 dependencies:
   - cf_xarray
   - codecov
+  - fsspec
+  - gcsfs
   - intake-esm
   - joblib
   - nbsphinx
@@ -18,6 +20,7 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - pyyaml
+  - s3fs
   - typer
   - xarray
   - pip:
