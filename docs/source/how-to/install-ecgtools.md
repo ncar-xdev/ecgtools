@@ -26,7 +26,7 @@ ecgtools can be installed in three ways:
 
     .. code:: bash
 
-        $ git clone https://github.com/NCAR/ecgtools
+        $ git clone https://github.com/ncar-xdev/ecgtools
         $ cd ecgtools
         $ python -m pip install -e .
 

@@ -6,7 +6,7 @@ The critical requirement for using [`intake-esm`](https://github.com/intake/inta
 
 ## Feedback
 
-If you encounter any errors or problems with **ecgtools**, please open an issue at the GitHub [main repository](http://github.com/NCAR/ecgtools).
+If you encounter any errors or problems with **ecgtools**, please open an issue at the GitHub [main repository](http://github.com/ncar-xdev/ecgtools).
 
 ```{toctree}
 ---
@@ -28,6 +28,6 @@ hidden:
 
 contributing.md
 changelog.md
-GitHub Repo <https://github.com/NCAR/ecgtools>
-GitHub discussions <https://github.com/NCAR/ecgtools/discussions>
+GitHub Repo <https://github.com/ncar-xdev/ecgtools>
+GitHub discussions <https://github.com/ncar-xdev/ecgtools/discussions>
 ```

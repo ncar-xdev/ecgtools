@@ -21,14 +21,14 @@ Feel free to suggest improvements or changes in the workflow.
 ## Feature requests and feedback
 
 We'd also like to hear about your propositions and suggestions. Feel free to
-submit them as issues on [ecgtools's GitHub issue tracker](https://github.com/NCAR/ecgtools) and:
+submit them as issues on [ecgtools's GitHub issue tracker](https://github.com/ncar-xdev/ecgtools) and:
 
 - Explain in detail how they should work.
 - Keep the scope as narrow as possible. This will make it easier to implement.
 
 ## Report bugs
 
-Report bugs for ecgtools in the [issue tracker](https://github.com/NCAR/ecgtools).
+Report bugs for ecgtools in the [issue tracker](https://github.com/ncar-xdev/ecgtools).
 
 If you are reporting a bug, please include:
 
@@ -44,7 +44,7 @@ fix the bug itself.
 
 ## Fix bugs
 
-Look through the [GitHub issues for bugs](https://github.com/NCAR/ecgtools/labels/type:%20bug).
+Look through the [GitHub issues for bugs](https://github.com/ncar-xdev/ecgtools/labels/type:%20bug).
 
 Talk to developers to find out how you can fix specific bugs.
 
@@ -67,7 +67,7 @@ $ make docs
 
 ## Preparing Pull Requests
 
-1. Fork the [ecgtools GitHub repository](https://github.com/NCAR/ecgtools).
+1. Fork the [ecgtools GitHub repository](https://github.com/ncar-xdev/ecgtools).
 
 2. Clone your fork locally using [git](https://git-scm.com/), connect your repository
    to the upstream (main project), and create a branch::
@@ -75,7 +75,7 @@ $ make docs
    ```bash
    $ git clone git@github.com:YOUR_GITHUB_USERNAME/ecgtools.git
    $ cd ecgtools
-   $ git remote add upstream git@github.com:NCAR/ecgtools.git
+   $ git remote add upstream git@github.com:ncar-xdev/ecgtools.git
    ```
 
    now, to fix a bug or add feature create your own branch off "master":
@@ -139,6 +139,6 @@ $ make docs
    head-fork: YOUR_GITHUB_USERNAME/ecgtools
    compare: your-branch-name
 
-   base-fork: NCAR/ecgtools
+   base-fork: ncar-xdev/ecgtools
    base: master # if it's a bugfix or feature
    ```
