@@ -134,6 +134,7 @@ class Builder:
             for path in self.paths
         ]
         self.assets = None
+        self.invalid_assets = pd.DataFrame()
         self.entries = None
         self.df = pd.DataFrame()
 
