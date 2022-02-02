@@ -1,128 +1,150 @@
-import json
 import os
 import pathlib
-import traceback
 
+import intake
 import pandas as pd
-import pydantic
 import pytest
 
-from ecgtools import Builder
+from ecgtools import Builder, RootDirectory, glob_to_regex
+from ecgtools.parsers.cesm import parse_cesm_history
 
 sample_data_dir = pathlib.Path(os.path.dirname(__file__)).parent / 'sample_data'
+
+
+@pytest.mark.parametrize(
+    'path, depth, storage_options,include_patterns, exclude_patterns, num_assets',
+    [
+        (str(sample_data_dir / 'cmip' / 'CMIP6'), 10, {}, ['*.nc'], [], 59),
+        (str(sample_data_dir / 'cmip' / 'cmip5'), 10, {}, ['*.nc'], ['*/esmControl/*'], 27),
+        ('s3://ncar-cesm-lens/atm/monthly', 0, {'anon': True}, [], ['*cesmLE-20C*'], 75),
+    ],
+)
+def test_directory(path, depth, storage_options, include_patterns, exclude_patterns, num_assets):
+    include_regex, exclude_regex = glob_to_regex(
+        include_patterns=include_patterns, exclude_patterns=exclude_patterns
+    )
+    directory = RootDirectory(
+        path=path,
+        depth=depth,
+        storage_options=storage_options,
+        include_regex=include_regex,
+        exclude_regex=exclude_regex,
+    )
+    assets = directory.walk()
+    assert len(assets) == num_assets
+
+
+@pytest.mark.parametrize(
+    'paths, depth, storage_options, include_patterns, exclude_patterns, num_assets',
+    [
+        (
+            [
+                str(sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'BCC'),
+                str(sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'IPSL'),
+            ],
+            8,
+            {},
+            ['*.nc'],
+            [],
+            27,
+        ),
+        (
+            ['s3://ncar-cesm-lens/lnd/monthly', 's3://ncar-cesm-lens/ocn/monthly'],
+            0,
+            {'anon': True},
+            [],
+            ['*cesmLE-20C*', '*cesmLE-RCP85*'],
+            78,
+        ),
+    ],
+)
+def test_builder_init(
+    paths, depth, storage_options, include_patterns, exclude_patterns, num_assets
+):
+    builder = Builder(
+        paths=paths,
+        depth=depth,
+        storage_options=storage_options,
+        include_patterns=include_patterns,
+        exclude_patterns=exclude_patterns,
+    )
+    builder.get_assets()
+    assert isinstance(builder.assets, list)
+    assert len(builder.assets) == num_assets
 
 
 def parsing_func(file):
     return {'path': file, 'variable': 'placeholder'}
 
 
-def parsing_func_errors(file):
-    try:
-        file.is_valid()
-    except:
-        return {Builder.INVALID_ASSET: file.as_posix(), Builder.TRACEBACK: traceback.format_exc()}
-
-
-def test_root_path_error():
-    with pytest.raises(pydantic.ValidationError):
-        Builder('test_directory')
+def post_process_func(df, times=10):
+    df['my_column'] = 1 * times
+    return df
 
 
 @pytest.mark.parametrize(
-    'root_path',
+    'paths, depth, storage_options, include_patterns, exclude_patterns, num_assets',
     [
-        sample_data_dir / 'cmip' / 'CMIP6',
-        sample_data_dir / 'cmip' / 'cmip5',
-        sample_data_dir / 'cesm',
-        [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
-        [
-            sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'IPSL',
-            sample_data_dir / 'cmip' / 'cmip5' / 'output1' / 'IPSL',
-        ],
+        (
+            [
+                str(sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'BCC'),
+                str(sample_data_dir / 'cesm'),
+            ],
+            1,
+            {},
+            ['*.nc'],
+            [],
+            3,
+        ),
+        (
+            ['s3://ncar-cesm-lens/lnd/static', 's3://ncar-cesm-lens/ocn/static'],
+            0,
+            {'anon': True},
+            [],
+            ['*cesmLE-20C*', '*cesmLE-RCP85*'],
+            4,
+        ),
     ],
 )
-def test_init(root_path):
-    _ = Builder(root_path)
-
-
-@pytest.mark.parametrize(
-    'root_path',
-    [
-        sample_data_dir / 'cmip' / 'CMIP6',
-        sample_data_dir / 'cmip' / 'cmip5',
-        sample_data_dir / 'cesm',
-        [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
-        [
-            sample_data_dir / 'cmip' / 'CMIP6' / 'CMIP' / 'IPSL',
-            sample_data_dir / 'cmip' / 'cmip5' / 'output1' / 'IPSL',
-        ],
-    ],
-)
-def test_get_filelist(root_path):
-    b = Builder(
-        root_path,
-        exclude_patterns=['*/files/*', '*/latest/*'],
-    ).get_directories()
-    assert b.dirs
-    assert isinstance(b.dirs[0], pathlib.Path)
-
-    b = b.get_filelist()
-    assert b.filelist
-    assert isinstance(b.filelist[0], pathlib.Path)
-
-
-def test_parse_error():
-    b = Builder(sample_data_dir / 'cesm').get_directories().get_filelist()
-
-    with pytest.raises(ValueError):
-        b._parse(None)
-
-
-@pytest.mark.parametrize(
-    'root_path',
-    [
-        sample_data_dir / 'cmip' / 'CMIP6',
-        sample_data_dir / 'cmip' / 'cmip5',
-        sample_data_dir / 'cesm',
-        [sample_data_dir / 'cmip' / 'CMIP6', sample_data_dir / 'cmip' / 'cmip5'],
-    ],
-)
-def test_build(root_path):
-    def func(df):
-        df['my_column'] = 'test'
-        return df
-
-    b = Builder(root_path, exclude_patterns=['*/files/*', '*/latest/*']).build(
-        parsing_func=parsing_func, postprocess_func=func
+def test_builder_build(
+    paths, depth, storage_options, include_patterns, exclude_patterns, num_assets
+):
+    builder = Builder(
+        paths=paths,
+        depth=depth,
+        storage_options=storage_options,
+        include_patterns=include_patterns,
+        exclude_patterns=exclude_patterns,
     )
-    assert 'my_column' in b.df.columns
-    assert b.entries
-    assert isinstance(b.entries[0], dict)
-    assert isinstance(b.df, pd.DataFrame)
-    assert not b.df.empty
+    builder.get_assets()
+    assert len(builder.assets) == num_assets
+    builder.build(
+        parsing_func=parsing_func,
+        postprocess_func=post_process_func,
+        postprocess_func_kwargs={'times': 100},
+    )
+    assert isinstance(builder.df, pd.DataFrame)
+    assert len(builder.df) == num_assets
+    assert set(builder.df.columns) == {'path', 'variable', 'my_column'}
 
 
-def test_parse_invalid_assets():
+def test_builder_save(tmp_path):
+    builder = Builder(paths=[str(sample_data_dir / 'cesm')], depth=5, include_patterns=['*.nc'])
+    builder.get_assets()
+    builder.assets.append('cesm/nonexistent_file.nc')  # Add an invalid file
 
     with pytest.warns(UserWarning):
-        b = Builder(sample_data_dir / 'cesm').build(parsing_func=parsing_func_errors)
-
-    assert not b.invalid_assets.empty
-    assert set(b.invalid_assets.columns) == {Builder.INVALID_ASSET, Builder.TRACEBACK}
-
-
-def test_save(tmp_path):
-    catalog_file = tmp_path / 'test_catalog.csv'
-
-    b = Builder(sample_data_dir / 'cesm').build(parsing_func=parsing_func)
-    b.save(catalog_file, 'path', 'variable', 'netcdf')
-
-    df = pd.read_csv(catalog_file)
-    assert len(df) == len(b.df)
-    assert set(df.columns) == set(b.df.columns)
-
-    json_path = tmp_path / 'test_catalog.json'
-    data = json.load(json_path.open())
-    assert {'catalog_file', 'assets', 'aggregation_control', 'attributes'}.issubset(
-        set(data.keys())
-    )
+        builder.parse(parsing_func=parse_cesm_history).clean_dataframe()
+    with pytest.warns(UserWarning):
+        builder.save(
+            name='test',
+            path_column_name='path',
+            directory=str(tmp_path),
+            data_format='netcdf',
+            variable_column_name='variables',
+            aggregations=[],
+            groupby_attrs=[],
+        )
+    assert not builder.invalid_assets.empty
+    cat = intake.open_esm_datastore(str(tmp_path / 'test.json'))
+    assert isinstance(cat.df, pd.DataFrame)

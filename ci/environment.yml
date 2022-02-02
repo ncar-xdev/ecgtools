@@ -4,11 +4,11 @@ channels:
   - nodefaults
 dependencies:
   - cf_xarray
+  - fsspec
+  - gcsfs
   - intake-esm
   - joblib
-  - nbsphinx
   - netcdf4
-  - numpydoc
   - pip
   - pre-commit
   - pydantic
@@ -17,7 +17,7 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - pyyaml
-  - typer
+  - s3fs
   - xarray
   - pip:
       - git+https://github.com/intake/intake-esm
