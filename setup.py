@@ -22,6 +22,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Scientific/Engineering',
         'Operating System :: OS Independent',
         'Intended Audience :: Science/Research',
@@ -38,7 +39,7 @@ setup(
     entry_points={},
     url='https://github.com/ncar-xdev/ecgtools',
     project_urls={
-        'Documentation': 'https://github.com/ncar-xdev/ecgtools',
+        'Documentation': 'https://ecgtools.readthedocs.io/',
         'Source': 'https://github.com/ncar-xdev/ecgtools',
         'Tracker': 'https://github.com/ncar-xdev/ecgtools/issues',
     },
