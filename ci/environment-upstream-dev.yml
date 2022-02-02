@@ -4,6 +4,7 @@ channels:
   - nodefaults
 dependencies:
   - cf_xarray
+  - codecov
   - intake-esm
   - joblib
   - nbsphinx
@@ -20,4 +21,5 @@ dependencies:
   - typer
   - xarray
   - pip:
+      - git+https://github.com/xarray-contrib/cf-xarray
       - git+https://github.com/intake/intake-esm
