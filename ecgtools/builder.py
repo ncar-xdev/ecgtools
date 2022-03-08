@@ -141,7 +141,7 @@ class Builder:
         self.df = pd.DataFrame()
 
     def get_assets(self):
-        with console.status(f'Crawling {len(self._root_dirs)} root directories'):
+        with console.status(f'[bold green]Crawling {len(self._root_dirs)} root directories'):
 
             def _get_asset_from_directory(directory):
                 return directory.walk()
