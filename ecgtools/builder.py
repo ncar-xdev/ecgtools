@@ -152,12 +152,13 @@ class Builder:
             raise ValueError('asset list provided is None. Please run `.get_assets()` first')
 
         parsing_func_kwargs = {} if parsing_func_kwargs is None else parsing_func_kwargs
-        entries = joblib.Parallel(**self.joblib_parallel_kwargs)(
-            joblib.delayed(parsing_func)(asset, **parsing_func_kwargs) for asset in self.assets
-        )
-        self.entries = entries
-        self.df = pd.DataFrame(entries)
-        return self
+        with console.status(f'Parsing {len(self.assets)} assets'):
+            entries = joblib.Parallel(**self.joblib_parallel_kwargs)(
+                joblib.delayed(parsing_func)(asset, **parsing_func_kwargs) for asset in self.assets
+            )
+            self.entries = entries
+            self.df = pd.DataFrame(entries)
+            return self
 
     def clean_dataframe(self):
         """Clean the dataframe by excluding invalid assets and removing duplicate entries."""
