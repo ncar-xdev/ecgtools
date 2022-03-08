@@ -1,4 +1,5 @@
 cf_xarray
+rich>=11.0.0
 joblib
 netCDF4
 xarray

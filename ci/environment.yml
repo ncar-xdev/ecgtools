@@ -17,6 +17,7 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - pyyaml
+  - rich
   - s3fs
   - xarray
   - pip:

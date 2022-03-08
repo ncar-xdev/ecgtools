@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import re
 
-from intake.source.utils import reverse_format
+import intake.source.utils
 
 
 def extract_attr_with_regex(
     input_str: str, regex: str, strip_chars: str = None, ignore_case: bool = True
-):
+) -> None | str:
 
     if ignore_case:
         pattern = re.compile(regex, re.IGNORECASE)
@@ -20,7 +22,7 @@ def extract_attr_with_regex(
         return None
 
 
-def reverse_filename_format(filename, templates):
+def reverse_filename_format(filename: str, templates: list[str]) -> dict[str, str]:
     """
     Uses intake's ``reverse_format`` utility to reverse the string method format.
     Given format_string and resolved_string, find arguments
@@ -30,7 +32,7 @@ def reverse_filename_format(filename, templates):
 
     for template in templates:
         try:
-            x = reverse_format(template, filename)
+            x = intake.source.utils.reverse_format(template, filename)
             if x:
                 break
         except ValueError:

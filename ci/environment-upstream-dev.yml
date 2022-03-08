@@ -9,7 +9,6 @@ dependencies:
   - gcsfs
   - intake-esm
   - joblib
-  - nbsphinx
   - netcdf4
   - numpydoc
   - pip
@@ -20,6 +19,7 @@ dependencies:
   - pytest-sugar
   - pytest-xdist
   - pyyaml
+  - rich
   - s3fs
   - typer
   - xarray
