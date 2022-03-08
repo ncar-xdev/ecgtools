@@ -66,7 +66,8 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           python -m pip install dist/ecgtools*.whl
-          python -c "import ecgtools; print(ecgtools.__version__)"
+          # TODO: Uncomment this line when we have a new release of intake-esm
+          # python -c "import ecgtools; print(ecgtools.__version__)"
 
   upload-to-pypi:
     needs: test-built-dist
