@@ -152,7 +152,7 @@ class Builder:
             raise ValueError('asset list provided is None. Please run `.get_assets()` first')
 
         parsing_func_kwargs = {} if parsing_func_kwargs is None else parsing_func_kwargs
-        with console.status(f'Parsing {len(self.assets)} assets'):
+        with console.status(f'[bold green]Parsing {len(self.assets)} assets...', spinner='pong'):
             entries = joblib.Parallel(**self.joblib_parallel_kwargs)(
                 joblib.delayed(parsing_func)(asset, **parsing_func_kwargs) for asset in self.assets
             )
