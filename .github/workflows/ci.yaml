@@ -23,20 +23,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python-version: ['3.7', '3.8', '3.9', '3.10']
+        python-version: ['3.8', '3.9', '3.10']
     steps:
       - uses: actions/checkout@v3
-      - uses: conda-incubator/setup-miniconda@v2
+      - name: Create conda environment
+        uses: mamba-org/provision-with-micromamba@main
         with:
-          channels: conda-forge
-          channel-priority: strict
-          activate-environment: ecgtools-dev
-          auto-update-conda: false
-          python-version: ${{ matrix.python-version }}
-          mamba-version: '*'
-          use-mamba: true
-          miniforge-variant: Mambaforge
+          cache-downloads: true
+          micromamba-version: 'latest'
           environment-file: ci/environment.yml
+          extra-specs: |
+            python=${{ matrix.python-version }}
 
       - name: Install ecgtools
         run: |
