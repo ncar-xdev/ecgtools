@@ -45,7 +45,7 @@ def parse_cmip6(file):
 
     try:
 
-        with xr.open_dataset(file, chunks={}, use_cftime=True) as ds:
+        with xr.open_dataset(file, chunks={}, use_cftime=True, engine='netcdf4') as ds:
             info = {key: ds.attrs.get(key) for key in keys}
             info['member_id'] = info['variant_label']
 
