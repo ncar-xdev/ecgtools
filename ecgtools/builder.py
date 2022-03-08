@@ -142,7 +142,14 @@ class Builder:
 
     def get_assets(self):
         with console.status(f'Crawling {len(self._root_dirs)} root directories'):
-            assets = [directory.walk() for directory in self._root_dirs]
+
+            def _get_asset_from_directory(directory):
+                return directory.walk()
+
+            assets = joblib.Parallel(**self.joblib_parallel_kwargs)(
+                joblib.delayed(_get_asset_from_directory)(directory)
+                for directory in self._root_dirs
+            )
             self.assets = sorted(toolz.unique(toolz.concat(assets)))
             return self
 
