@@ -19,6 +19,8 @@ from intake_esm.cat import (
     ESMCatalogModel,
 )
 
+from .console import console
+
 INVALID_ASSET = 'INVALID_ASSET'
 TRACEBACK = 'TRACEBACK'
 
@@ -139,9 +141,10 @@ class Builder:
         self.df = pd.DataFrame()
 
     def get_assets(self):
-        assets = [directory.walk() for directory in self._root_dirs]
-        self.assets = sorted(toolz.unique(toolz.concat(assets)))
-        return self
+        with console.status(f'Crawling {len(self._root_dirs)} root directories'):
+            assets = [directory.walk() for directory in self._root_dirs]
+            self.assets = sorted(toolz.unique(toolz.concat(assets)))
+            return self
 
     @pydantic.validate_arguments
     def parse(self, *, parsing_func: typing.Callable, parsing_func_kwargs: dict = None):
