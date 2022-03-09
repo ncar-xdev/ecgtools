@@ -11,32 +11,28 @@ from .utilities import extract_attr_with_regex, reverse_filename_format
 
 def parse_cmip6(file):
     """Parser for CMIP6"""
-    keys = sorted(
-        list(
-            {
-                'activity_id',
-                'branch_time_in_child',
-                'branch_time_in_parent',
-                'experiment',
-                'experiment_id',
-                'frequency',
-                'grid_label',
-                'institution_id',
-                'nominal_resolution',
-                'parent_activity_id',
-                'parent_experiment_id',
-                'parent_source_id',
-                'parent_variant_label',
-                'realm',
-                'source_id',
-                'sub_experiment',
-                'sub_experiment_id',
-                'table_id',
-                'variable_id',
-                'variant_label',
-            }
-        )
-    )
+    keys = {
+        'activity_id',
+        'branch_time_in_child',
+        'branch_time_in_parent',
+        'experiment',
+        'experiment_id',
+        'frequency',
+        'grid_label',
+        'institution_id',
+        'nominal_resolution',
+        'parent_activity_id',
+        'parent_experiment_id',
+        'parent_source_id',
+        'parent_variant_label',
+        'realm',
+        'source_id',
+        'sub_experiment',
+        'sub_experiment_id',
+        'table_id',
+        'variable_id',
+        'variant_label',
+    }
 
     try:
 
