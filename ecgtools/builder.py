@@ -180,7 +180,7 @@ class Builder:
                 )
             self.df = df
         columns = sorted(self.df.columns)
-        self.ds = self.df[columns]
+        self.df = self.df[columns]
         return self
 
     @pydantic.validate_arguments
