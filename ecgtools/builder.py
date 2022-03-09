@@ -178,8 +178,9 @@ class Builder:
                     f'Unable to parse {len(self.invalid_assets)} assets. A list of these assets can be found in `.invalid_assets` attribute.',
                     stacklevel=2,
                 )
-            columns = sorted(df.columns)
-            self.df = df[columns]
+            self.df = df
+        columns = sorted(self.df.columns)
+        self.ds = self.df[columns]
         return self
 
     @pydantic.validate_arguments
