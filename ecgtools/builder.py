@@ -265,9 +265,9 @@ class Builder:
             from intake_esm.cat import AggregationControl, Assets, Attribute, ESMCatalogModel
         except ImportError as exc:
             raise ImportError(
-                'intake_esm>=2022.09 is required to save the catalog.'
-                ' To proceed please install pooch using:'
-                ' `python -m pip install pooch` or `conda install -c conda-forge pooch`.'
+                'intake-esm>=2022.09 is required to save the catalog.'
+                ' To proceed please install intake-esm using:'
+                ' `python -m pip install intake-esm` or `conda install -c conda-forge intake-esm`.'
             ) from exc
 
         for col in {variable_column_name, path_column_name}.union(set(groupby_attrs or [])):
