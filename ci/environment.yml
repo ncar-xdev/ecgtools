@@ -7,6 +7,7 @@ dependencies:
   - fsspec
   - gcsfs
   - intake-esm
+  - intake-esm>=2022.09
   - joblib
   - netcdf4
   - pip
@@ -19,5 +20,3 @@ dependencies:
   - pyyaml
   - s3fs
   - xarray
-  - pip:
-      - git+https://github.com/intake/intake-esm

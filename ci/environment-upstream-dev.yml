@@ -7,7 +7,7 @@ dependencies:
   - codecov
   - fsspec
   - gcsfs
-  - intake-esm
+  - intake-esm >=2022.09
   - joblib
   - nbsphinx
   - netcdf4

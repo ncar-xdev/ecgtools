@@ -6,4 +6,3 @@ pyyaml
 pydantic
 pandas
 fsspec
-intake-esm

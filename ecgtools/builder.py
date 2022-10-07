@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import fnmatch
 import os.path
 import re
@@ -10,14 +12,6 @@ import joblib
 import pandas as pd
 import pydantic
 import toolz
-from intake_esm.cat import (
-    Aggregation,
-    AggregationControl,
-    Assets,
-    Attribute,
-    DataFormat,
-    ESMCatalogModel,
-)
 
 INVALID_ASSET = 'INVALID_ASSET'
 TRACEBACK = 'TRACEBACK'
@@ -32,7 +26,7 @@ def glob_to_regex(*, include_patterns, exclude_patterns):
 class RootDirectory(pydantic.BaseModel):
     path: str
     depth: int = 0
-    storage_options: typing.Dict[typing.Any, typing.Any] = pydantic.Field(default_factory=dict)
+    storage_options: dict[typing.Any, typing.Any] = pydantic.Field(default_factory=dict)
     exclude_regex: str = pydantic.Field(default_factory=str)
     include_regex: str = pydantic.Field(default_factory=str)
 
@@ -106,12 +100,12 @@ class Builder:
         Parameters passed to joblib.Parallel. Default is {}.
     """
 
-    paths: typing.List[str]
-    storage_options: typing.Dict[typing.Any, typing.Any] = None
+    paths: list[str]
+    storage_options: dict[typing.Any, typing.Any] = None
     depth: int = 0
-    exclude_patterns: typing.List[str] = None
-    include_patterns: typing.List[str] = None
-    joblib_parallel_kwargs: typing.Dict[str, typing.Any] = None
+    exclude_patterns: list[str] = None
+    include_patterns: list[str] = None
+    joblib_parallel_kwargs: dict[str, typing.Any] = None
 
     def __post_init_post_parse__(self):
         self.storage_options = self.storage_options or {}
@@ -215,9 +209,9 @@ class Builder:
         name: str,
         path_column_name: str,
         variable_column_name: str,
-        data_format: DataFormat,
-        groupby_attrs: typing.List[str] = None,
-        aggregations: typing.List[Aggregation] = None,
+        data_format: str,
+        groupby_attrs: list[str] = None,
+        aggregations: list[dict] = None,
         esmcat_version: str = '0.0.1',
         description: str = None,
         directory: str = None,
@@ -266,6 +260,15 @@ class Builder:
         See https://github.com/NCAR/esm-collection-spec/blob/master/collection-spec/collection-spec.md
         for more
         """
+
+        try:
+            from intake_esm.cat import AggregationControl, Assets, Attribute, ESMCatalogModel
+        except ImportError as exc:
+            raise ImportError(
+                'intake_esm>=2022.09 is required to save the catalog.'
+                ' To proceed please install pooch using:'
+                ' `python -m pip install pooch` or `conda install -c conda-forge pooch`.'
+            ) from exc
 
         for col in {variable_column_name, path_column_name}.union(set(groupby_attrs or [])):
             assert col in self.df.columns, f'{col} must be a column in the dataframe.'
