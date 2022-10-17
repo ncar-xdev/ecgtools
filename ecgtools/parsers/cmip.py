@@ -121,7 +121,8 @@ def parse_cmip6_using_directories(file):
     templates = [filename_template, gridspec_template]
     fileparts = reverse_filename_format(basename, templates=templates)
     try:
-        parent = pathlib.Path(file).parent
+        parent = str(pathlib.Path(file).parent)
+        print(parent)
         parent_split = parent.split(f"/{fileparts['source_id']}/")
         part_1 = parent_split[0].strip('/').split('/')
         grid_label = parent.split(f"/{fileparts['variable_id']}/")[1].strip('/').split('/')[0]
@@ -144,7 +145,7 @@ def parse_cmip6_using_directories(file):
     return fileparts
 
 
-def cmip5_parser(file):
+def parse_cmip5_using_directories(file):
     """Extract attributes of a file using information from CMIP5 DRS.
     Notes
     -----
@@ -156,7 +157,7 @@ def cmip5_parser(file):
     realm_regex = r'aerosol|atmos|land|landIce|ocean|ocnBgchem|seaIce'
     version_regex = r'v\d{4}\d{2}\d{2}|v\d{1}'
 
-    file_basename = pathlib.Path(file).name
+    file_basename = str(pathlib.Path(file).name)
 
     filename_template = (
         '{variable}_{mip_table}_{model}_{experiment}_{ensemble_member}_{temporal_subset}.nc'
