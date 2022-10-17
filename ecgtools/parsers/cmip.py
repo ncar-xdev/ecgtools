@@ -174,7 +174,7 @@ def parse_cmip5_using_directories(file):
     fileparts['version'] = version
     fileparts['path'] = file
     try:
-        part1, part2 = pathlib.Path(file).parent.split(fileparts['experiment'])
+        part1, part2 = str(pathlib.Path(file).parent.split(fileparts['experiment']))
         part1 = part1.strip('/').split('/')
         fileparts['institute'] = part1[-2]
         fileparts['product_id'] = part1[-3]
