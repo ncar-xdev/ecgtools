@@ -140,7 +140,7 @@ def parse_cmip6_using_directories(file):
             fileparts['dcpp_init_year'] = np.nan
 
     except Exception:
-        pass
+        return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
 
     return fileparts
 
