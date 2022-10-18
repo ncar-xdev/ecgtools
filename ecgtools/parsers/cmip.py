@@ -178,6 +178,6 @@ def parse_cmip5_using_directories(file):
         fileparts['institute'] = part1[-2]
         fileparts['product_id'] = part1[-3]
     except Exception:
-        pass
+        return {INVALID_ASSET: file, TRACEBACK: traceback.format_exc()}
 
     return fileparts
