@@ -122,7 +122,6 @@ def parse_cmip6_using_directories(file):
     fileparts = reverse_filename_format(basename, templates=templates)
     try:
         parent = str(pathlib.Path(file).parent)
-        print(parent)
         parent_split = parent.split(f"/{fileparts['source_id']}/")
         part_1 = parent_split[0].strip('/').split('/')
         grid_label = parent.split(f"/{fileparts['variable_id']}/")[1].strip('/').split('/')[0]
