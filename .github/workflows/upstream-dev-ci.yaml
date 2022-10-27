@@ -47,8 +47,7 @@ jobs:
         if: success()
         id: status
         run: |
-          python -m pytest -rf \
-            --report-log output-log.jsonl
+          python -m pytest -rf --report-log output-log.jsonl
       - name: Generate and publish the report
         if: |
           failure()
