@@ -14,7 +14,6 @@ dependencies:
   - numpydoc
   - pip
   - pre-commit
-  - pydantic
   - pytest
   - pytest-cov
   - pytest-sugar
