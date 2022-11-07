@@ -137,8 +137,7 @@ class Builder:
         self.df = pd.DataFrame()
 
     def get_assets(self):
-        assets = [directory.walk() for directory in self._root_dirs]
-        self.assets = sorted(toolz.unique(toolz.concat(assets)))
+        self.assets = self.paths
         return self
 
     def parse(self, *, parsing_func: typing.Callable, parsing_func_kwargs: dict = None):
@@ -169,7 +168,6 @@ class Builder:
 
     def build(
         self,
-        *,
         parsing_func: typing.Callable,
         parsing_func_kwargs: dict = None,
         postprocess_func: typing.Callable = None,
@@ -206,7 +204,6 @@ class Builder:
 
     def save(
         self,
-        *,
         name: str,
         path_column_name: str,
         variable_column_name: str,
