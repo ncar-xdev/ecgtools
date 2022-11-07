@@ -8,7 +8,6 @@ import warnings
 import fsspec
 import joblib
 import pandas as pd
-import pydantic
 import toolz
 from intake_esm.cat import (
     Aggregation,
@@ -29,12 +28,12 @@ def glob_to_regex(*, include_patterns, exclude_patterns):
     return include_regex, exclude_regex
 
 
-class RootDirectory(pydantic.BaseModel):
+class RootDirectory:
     path: str
     depth: int = 0
-    storage_options: typing.Dict[typing.Any, typing.Any] = pydantic.Field(default_factory=dict)
-    exclude_regex: str = pydantic.Field(default_factory=str)
-    include_regex: str = pydantic.Field(default_factory=str)
+    storage_options: typing.Dict[typing.Any, typing.Any]
+    exclude_regex: str
+    include_regex: str
 
     def __hash__(self):
         return hash(f'{self.path}{self.raw_path}')
@@ -85,7 +84,6 @@ class RootDirectory(pydantic.BaseModel):
         return all_assets
 
 
-@pydantic.dataclasses.dataclass
 class Builder:
     """Generates a catalog from a list of netCDF files or zarr stores
 
@@ -143,7 +141,6 @@ class Builder:
         self.assets = sorted(toolz.unique(toolz.concat(assets)))
         return self
 
-    @pydantic.validate_arguments
     def parse(self, *, parsing_func: typing.Callable, parsing_func_kwargs: dict = None):
         if not self.assets:
             raise ValueError('asset list provided is None. Please run `.get_assets()` first')
@@ -170,7 +167,6 @@ class Builder:
             self.df = df
         return self
 
-    @pydantic.validate_arguments
     def build(
         self,
         *,
@@ -208,7 +204,6 @@ class Builder:
             self.df = postprocess_func(self.df, **postprocess_func_kwargs)
         return self
 
-    @pydantic.validate_arguments
     def save(
         self,
         *,
