@@ -71,7 +71,6 @@ class Stream:
 
 
 def build_stream_list(stream_dict):
-
     cesm_streams = [
         Stream(name=key, component=value['component'], frequency=value['frequency'])
         for key, value in sorted(stream_dict.items(), reverse=True)
@@ -218,7 +217,6 @@ def parse_cesm_timeseries(file, user_streams_dict={}, xarray_open_kwargs=None):
                 info['time_range'] = date_range
                 break
         with xr.open_dataset(file, **xarray_open_kwargs) as ds:
-
             # Get the long name from dataset
             info['long_name'] = ds[info['variable']].attrs.get('long_name')
 
