@@ -60,7 +60,9 @@ class RootDirectory(pydantic.BaseModel):
             # exclude dirs
             directories = [os.path.join(root, directory) for directory in dirs]
             directories = [
-                directory for directory in directories if not re.match(self.exclude_regex, directory)
+                directory
+                for directory in directories
+                if not re.match(self.exclude_regex, directory)
             ]
 
             if files:
