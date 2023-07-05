@@ -6,7 +6,6 @@ from intake.source.utils import reverse_format
 def extract_attr_with_regex(
     input_str: str, regex: str, strip_chars: str = None, ignore_case: bool = True
 ):
-
     if ignore_case:
         pattern = re.compile(regex, re.IGNORECASE)
     else:
