@@ -12,7 +12,7 @@ dependencies:
   - myst-nb
   - netcdf4
   - pip
-  - pydantic
+  - pydantic<2.0 # Will remove in upcoming PR
   - s3fs
   - sphinx-copybutton
   - sphinx-inline-tabs

@@ -58,9 +58,11 @@ class RootDirectory(pydantic.BaseModel):
         all_assets = []
         for root, dirs, files in self.mapper.fs.walk(self.raw_path, maxdepth=self.depth + 1):
             # exclude dirs
-            dirs[:] = [os.path.join(root, directory) for directory in dirs]
-            dirs[:] = [
-                directory for directory in dirs if not re.match(self.exclude_regex, directory)
+            directories = [os.path.join(root, directory) for directory in dirs]
+            directories = [
+                directory
+                for directory in directories
+                if not re.match(self.exclude_regex, directory)
             ]
 
             if files:
@@ -75,7 +77,7 @@ class RootDirectory(pydantic.BaseModel):
 
             # Look for zarr assets. This works for zarr stores created with consolidated metadata
             # print(all_assets)
-            for directory in dirs:
+            for directory in directories:
                 if self.mapper.fs.exists(f'{directory}/.zmetadata'):
                     path = (
                         f'{self.protocol}://{directory}' if self.protocol != 'file' else directory

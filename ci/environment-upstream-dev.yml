@@ -14,7 +14,7 @@ dependencies:
   - numpydoc
   - pip
   - pre-commit
-  - pydantic
+  - pydantic<2.0 # Will remove in upcoming PR
   - pytest
   - pytest-cov
   - pytest-sugar
