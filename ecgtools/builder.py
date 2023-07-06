@@ -146,7 +146,7 @@ class Builder:
         return self
 
     @pydantic.validate_arguments
-    def parse(self, *, parsing_func: typing.Callable, parsing_func_kwargs: dict = None):
+    def parse(self, *, parsing_func: typing.Callable, parsing_func_kwargs: typing.Optional[dict] = None):
         if not self.assets:
             raise ValueError('asset list provided is None. Please run `.get_assets()` first')
 
