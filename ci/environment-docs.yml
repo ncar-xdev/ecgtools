@@ -1,4 +1,4 @@
-name: ecgtools-dev
+name: ecgtools-doc
 channels:
   - conda-forge
   - nodefaults
@@ -12,14 +12,13 @@ dependencies:
   - myst-nb
   - netcdf4
   - pip
-  - pydantic
+  - pydantic>=2.0
   - s3fs
   - sphinx-copybutton
   - sphinx-inline-tabs
   - xarray
   - pip:
       - sphinxext-opengraph
-      - autodoc_pydantic
       - -r ../requirements.txt
       - git+https://github.com/intake/intake-esm
       - -e ..
