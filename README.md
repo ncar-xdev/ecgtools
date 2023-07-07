@@ -26,8 +26,8 @@ It is also available from conda-forge for conda installations:
 conda install -c conda-forge ecgtools
 ```
 
-[github-ci-badge]: https://img.shields.io/github/workflow/status/ncar-xdev/ecgtools/CI?label=CI&logo=github
-[github-ci-link]: https://github.com/ncar-xdev/ecgtools/actions?query=workflow%3ACI
+[github-ci-badge]: https://github.com/ncar-xdev/ecgtools/actions/workflows/ci.yaml/badge.svg
+[github-ci-link]: https://github.com/ncar-xdev/ecgtools/actions/workflows/ci.yaml
 [codecov-badge]: https://img.shields.io/codecov/c/github/ncar-xdev/ecgtools.svg?logo=codecov
 [codecov-link]: https://codecov.io/gh/ncar-xdev/ecgtools
 [rtd-badge]: https://img.shields.io/readthedocs/ecgtools/latest.svg

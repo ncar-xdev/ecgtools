@@ -58,9 +58,11 @@ class RootDirectory(pydantic.BaseModel):
         all_assets = []
         for root, dirs, files in self.mapper.fs.walk(self.raw_path, maxdepth=self.depth + 1):
             # exclude dirs
-            dirs[:] = [os.path.join(root, directory) for directory in dirs]
-            dirs[:] = [
-                directory for directory in dirs if not re.match(self.exclude_regex, directory)
+            directories = [os.path.join(root, directory) for directory in dirs]
+            directories = [
+                directory
+                for directory in directories
+                if not re.match(self.exclude_regex, directory)
             ]
 
             if files:
@@ -75,7 +77,7 @@ class RootDirectory(pydantic.BaseModel):
 
             # Look for zarr assets. This works for zarr stores created with consolidated metadata
             # print(all_assets)
-            for directory in dirs:
+            for directory in directories:
                 if self.mapper.fs.exists(f'{directory}/.zmetadata'):
                     path = (
                         f'{self.protocol}://{directory}' if self.protocol != 'file' else directory
@@ -107,13 +109,13 @@ class Builder:
     """
 
     paths: typing.List[str]
-    storage_options: typing.Dict[typing.Any, typing.Any] = None
+    storage_options: typing.Optional[typing.Dict[typing.Any, typing.Any]] = None
     depth: int = 0
-    exclude_patterns: typing.List[str] = None
-    include_patterns: typing.List[str] = None
-    joblib_parallel_kwargs: typing.Dict[str, typing.Any] = None
+    exclude_patterns: typing.Optional[typing.List[str]] = None
+    include_patterns: typing.Optional[typing.List[str]] = None
+    joblib_parallel_kwargs: typing.Optional[typing.Dict[str, typing.Any]] = None
 
-    def __post_init_post_parse__(self):
+    def __post_init__(self):
         self.storage_options = self.storage_options or {}
         self.joblib_parallel_kwargs = self.joblib_parallel_kwargs or {}
         self.exclude_patterns = self.exclude_patterns or []
@@ -144,7 +146,9 @@ class Builder:
         return self
 
     @pydantic.validate_arguments
-    def parse(self, *, parsing_func: typing.Callable, parsing_func_kwargs: dict = None):
+    def parse(
+        self, *, parsing_func: typing.Callable, parsing_func_kwargs: typing.Optional[dict] = None
+    ):
         if not self.assets:
             raise ValueError('asset list provided is None. Please run `.get_assets()` first')
 
@@ -175,9 +179,9 @@ class Builder:
         self,
         *,
         parsing_func: typing.Callable,
-        parsing_func_kwargs: dict = None,
-        postprocess_func: typing.Callable = None,
-        postprocess_func_kwargs: dict = None,
+        parsing_func_kwargs: typing.Optional[dict] = None,
+        postprocess_func: typing.Optional[typing.Callable] = None,
+        postprocess_func_kwargs: typing.Optional[dict] = None,
     ):
         """Builds a catalog from a list of netCDF files or zarr stores.
 
@@ -216,14 +220,14 @@ class Builder:
         path_column_name: str,
         variable_column_name: str,
         data_format: DataFormat,
-        groupby_attrs: typing.List[str] = None,
-        aggregations: typing.List[Aggregation] = None,
+        groupby_attrs: typing.Optional[typing.List[str]] = None,
+        aggregations: typing.Optional[typing.List[Aggregation]] = None,
         esmcat_version: str = '0.0.1',
-        description: str = None,
-        directory: str = None,
+        description: typing.Optional[str] = None,
+        directory: typing.Optional[str] = None,
         catalog_type: str = 'file',
-        to_csv_kwargs: dict = None,
-        json_dump_kwargs: dict = None,
+        to_csv_kwargs: typing.Optional[dict] = None,
+        json_dump_kwargs: typing.Optional[dict] = None,
     ):
         """Persist catalog contents to files.
 

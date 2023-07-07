@@ -16,7 +16,6 @@ extensions = [
     'myst_nb',
     'sphinxext.opengraph',
     'sphinx_copybutton',
-    'sphinxcontrib.autodoc_pydantic',
     'sphinx_inline_tabs',
 ]
 
@@ -30,10 +29,6 @@ myst_url_schemes = ['http', 'https', 'mailto']
 # sphinx-copybutton configurations
 copybutton_prompt_text = r'>>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: '
 copybutton_prompt_is_regexp = True
-
-
-autodoc_pydantic_model_show_json = True
-autodoc_pydantic_settings_show_json = False
 
 jupyter_execute_notebooks = 'off'
 execution_timeout = 600
