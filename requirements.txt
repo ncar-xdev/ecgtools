@@ -6,4 +6,4 @@ pyyaml
 pydantic>=2.0
 pandas
 fsspec
-intake-esm
+intake-esm>=2023.7.7
