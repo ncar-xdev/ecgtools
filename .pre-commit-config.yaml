@@ -3,7 +3,7 @@ ci:
 
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.6.0
+    rev: v6.0.0
     hooks:
       - id: trailing-whitespace
       - id: end-of-file-fixer
@@ -15,30 +15,30 @@ repos:
       - id: mixed-line-ending
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v3.16.0
+    rev: v3.21.2
     hooks:
       - id: pyupgrade
         args:
           - "--py38-plus"
 
-  - repo: https://github.com/psf/black
-    rev: 24.4.2
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: 26.5.1
     hooks:
       - id: black-jupyter
       - id: black
 
   - repo: https://github.com/keewis/blackdoc
-    rev: v0.3.9
+    rev: v0.4.6
     hooks:
       - id: blackdoc
 
   - repo: https://github.com/PyCQA/flake8
-    rev: 7.1.0
+    rev: 7.3.0
     hooks:
       - id: flake8
 
   - repo: https://github.com/PyCQA/isort
-    rev: 5.13.2
+    rev: 9.0.1
     hooks:
       - id: isort
 
