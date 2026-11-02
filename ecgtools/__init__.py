@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # flake8: noqa
 """Top-level module for ecgtools ."""
+
 from importlib.metadata import PackageNotFoundError, version
 
 from .builder import Builder, RootDirectory, glob_to_regex
